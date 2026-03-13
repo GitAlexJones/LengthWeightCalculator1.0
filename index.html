@@ -3,1051 +3,1874 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flow Like a Pro — Hatchery Measurements & Calculations</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Length Weight Calculator 1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --blue:#1a6fb5;--blue-dark:#134d80;--blue-light:#e8f2fb;--blue-glow:rgba(26,111,181,0.1);
-  --teal:#0d8a72;--teal-light:#e6f5f1;--teal-glow:rgba(13,138,114,0.08);
-  --orange:#d97706;--orange-light:#fef3c7;
-  --red:#dc3545;--red-light:#fde8ea;
-  --green:#16a34a;--green-light:#dcfce7;
-  --purple:#7c3aed;--purple-light:#ede9fe;
-  --gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;--gray-300:#cbd5e1;
-  --gray-400:#94a3b8;--gray-500:#64748b;--gray-600:#475569;--gray-700:#334155;
-  --gray-800:#1e293b;--gray-900:#0f172a;
-  --white:#ffffff;--body-bg:#f0f4f8;
-  --radius:12px;--radius-sm:8px;--radius-xs:6px;
-  --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 12px rgba(0,0,0,0.05);
-  --shadow-lg:0 4px 20px rgba(0,0,0,0.1);
-  --font:'Outfit',system-ui,sans-serif;
-  --mono:'JetBrains Mono',monospace;
+:root {
+  --bg: #0A1219;
+  --surface: #0F1B26;
+  --surface-alt: #132231;
+  --border: #1B3044;
+  --border-hover: #2A5278;
+  --accent: #38A3F1;
+  --accent-soft: rgba(56,163,241,0.10);
+  --accent-glow: rgba(56,163,241,0.22);
+  --warm: #F0B040;
+  --warm-soft: rgba(240,176,64,0.10);
+  --green: #30D878;
+  --green-soft: rgba(48,216,120,0.10);
+  --violet: #A78BFA;
+  --danger: #E74C5E;
+  --text: #DFE7F0;
+  --text-muted: #7E94AD;
+  --text-dim: #4E6680;
+  --white: #FFFFFF;
+  --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --sans: 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
-html{font-size:15px;scroll-behavior:smooth}
-body{font-family:var(--font);background:var(--body-bg);color:var(--gray-800);min-height:100vh;-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:7px}
-::-webkit-scrollbar-track{background:var(--gray-100)}
-::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:4px}
-
-/* ─── HEADER ─── */
-.header{
-  background:linear-gradient(135deg,#0c4a6e 0%,var(--blue) 50%,var(--teal) 100%);
-  color:#fff;padding:0 20px;position:sticky;top:0;z-index:100;
-  box-shadow:0 2px 12px rgba(0,0,0,0.15);
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
 }
-.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-icon{
-  width:38px;height:38px;border-radius:10px;
-  background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);
-  display:flex;align-items:center;justify-content:center;font-size:20px;
-}
-.logo h1{font-size:18px;font-weight:700;letter-spacing:-0.3px}
-.logo span{font-size:10.5px;font-weight:400;opacity:0.7;display:block;letter-spacing:0.5px}
-
-/* ─── NAV ─── */
-.nav{display:flex;gap:2px;height:60px;align-items:stretch;overflow-x:auto}
-.nav button{
-  background:none;border:none;color:rgba(255,255,255,0.7);
-  font-family:var(--font);font-size:13px;font-weight:600;
-  padding:0 14px;cursor:pointer;position:relative;white-space:nowrap;transition:color 0.2s;
-}
-.nav button:hover{color:#fff}
-.nav button.active{color:#fff}
-.nav button.active::after{
-  content:'';position:absolute;bottom:0;left:8px;right:8px;
-  height:3px;background:#fff;border-radius:3px 3px 0 0;
-}
-.badge{
-  background:rgba(255,255,255,0.25);font-size:10px;font-weight:700;
-  padding:1px 6px;border-radius:10px;margin-left:4px;
-}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
 
 /* ─── LAYOUT ─── */
-.container{max-width:1100px;margin:0 auto;padding:20px}
-.page{display:none;animation:fadeIn 0.3s ease}
-.page.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.app-header {
+  height: 60px; display: flex; align-items: center; gap: 14px;
+  padding: 0 28px; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.logo-mark {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: linear-gradient(135deg, #38A3F1, #1D6DA8);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--white); flex-shrink: 0;
+}
+.logo-text { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.logo-sub { font-size: 10.5px; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+.header-right { margin-left: auto; text-align: right; font-size: 11px; color: var(--text-dim); line-height: 1.5; }
 
-/* ─── CARDS ─── */
-.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin-bottom:20px;border:1px solid var(--gray-200)}
-.card-title{font-size:20px;font-weight:700;color:var(--gray-900);margin-bottom:2px}
-.card-sub{font-size:13px;color:var(--gray-500);margin-bottom:18px}
-.section-label{
-  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
-  color:var(--blue);margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid var(--blue-light);
+.app-body { display: flex; height: calc(100vh - 60px); }
+
+.sidebar {
+  width: 195px; flex-shrink: 0; background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 14px 10px; display: flex; flex-direction: column; gap: 3px;
+}
+.nav-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; border: 1px solid transparent;
+  border-radius: 8px; background: transparent;
+  color: var(--text-muted); font-size: 14px; font-weight: 400;
+  cursor: pointer; font-family: var(--sans); text-align: left; width: 100%;
+  transition: all 0.15s;
+}
+.nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-btn.active {
+  background: var(--accent-soft); border-color: rgba(56,163,241,0.2);
+  color: var(--accent); font-weight: 600;
+}
+.nav-btn svg { flex-shrink: 0; }
+.sidebar-spacer { flex: 1; }
+.quick-ref {
+  padding: 14px; margin-top: 8px; background: var(--surface-alt);
+  border-radius: 8px; border: 1px solid var(--border);
+}
+.quick-ref-title {
+  font-size: 10px; font-weight: 700; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px;
+}
+.quick-ref-body {
+  font-size: 12px; color: var(--text-muted); line-height: 1.7;
+  font-family: var(--mono);
 }
 
-/* ─── INPUTS ─── */
-.field{margin-bottom:14px}
-.field label{display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:4px}
-.field label .unit{font-weight:400;color:var(--gray-400)}
-.field input,.field select{
-  width:100%;padding:10px 12px;border:1.5px solid var(--gray-300);
-  border-radius:var(--radius-sm);font-family:var(--mono);font-size:14px;
-  color:var(--gray-800);background:var(--white);outline:none;transition:border-color 0.2s;
+.main-content {
+  flex: 1; padding: 28px 36px; overflow-y: auto;
 }
-.field input:focus,.field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow)}
-.field .hint{font-size:11px;color:var(--gray-400);margin-top:2px}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:600px){.field-row{grid-template-columns:1fr}}
 
-/* ─── PILLS ─── */
-.pills{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
-.pill{
-  padding:6px 14px;border-radius:20px;border:1.5px solid var(--gray-300);
-  background:var(--white);color:var(--gray-600);font-size:12.5px;font-weight:600;
-  cursor:pointer;transition:all 0.2s;font-family:var(--font);
+/* ─── COMMON UI ─── */
+.page-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.page-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px;
 }
-.pill:hover{border-color:var(--blue);color:var(--blue)}
-.pill.active{background:var(--blue);border-color:var(--blue);color:#fff}
 
-/* ─── RESULTS ─── */
-.results{display:grid;gap:10px;margin-top:18px}
-.results.cols-2{grid-template-columns:1fr 1fr}
-.results.cols-3{grid-template-columns:1fr 1fr 1fr}
-@media(max-width:600px){.results.cols-2,.results.cols-3{grid-template-columns:1fr}}
-.result{
-  background:var(--gray-50);border:1.5px solid var(--gray-200);
-  border-radius:var(--radius-sm);padding:12px 14px;
+label.field-label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.07em; margin-bottom: 6px;
 }
-.result.primary{background:var(--blue-light);border-color:var(--blue)}
-.result.green{background:var(--green-light);border-color:var(--green)}
-.result .rlabel{font-size:10.5px;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:2px}
-.result .rval{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--gray-800)}
-.result.primary .rval{color:var(--blue-dark)}
-.result.green .rval{color:var(--green)}
-.result .runit{font-size:11.5px;color:var(--gray-400);font-weight:400;margin-left:3px}
-
-/* ─── SAVE BTN ─── */
-.save-btn{
-  width:100%;padding:11px;margin-top:14px;border-radius:var(--radius-sm);
-  border:1.5px dashed var(--teal);background:var(--teal-light);
-  color:var(--teal);font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font);
+input.field, select.field, textarea.field {
+  width: 100%; padding: 10px 14px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-size: 14px; font-family: var(--mono);
+  outline: none; transition: border-color 0.2s;
 }
-.save-btn:hover{background:rgba(13,138,114,0.15)}
-
-/* ─── VISUAL DIAGRAMS ─── */
-.diagram{
-  background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius);
-  padding:20px;margin:16px 0;text-align:center;
+input.field:focus, select.field:focus, textarea.field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
-.diagram svg{max-width:100%;height:auto}
-
-/* ─── CREST TABLE ─── */
-.crest-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;margin:16px 0;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--gray-200)}
-.crest-table th{background:var(--blue);color:#fff;padding:10px 8px;font-weight:600;font-size:12px;text-align:center}
-.crest-table td{padding:8px;text-align:center;border-bottom:1px solid var(--gray-200);font-family:var(--mono);font-size:12.5px}
-.crest-table tr:nth-child(even){background:var(--gray-50)}
-.crest-table tr:hover{background:var(--blue-light)}
-.crest-table tr.highlight{background:var(--orange-light) !important;font-weight:700}
-
-/* ─── INFO BOXES ─── */
-.tip-box{
-  border-radius:var(--radius-sm);padding:14px 16px;margin:14px 0;
-  display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.6;
+select.field {
+  appearance: none; cursor: pointer; padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237E94AD' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
 }
-.tip-box.blue{background:var(--blue-light);border-left:4px solid var(--blue);color:var(--blue-dark)}
-.tip-box.green{background:var(--green-light);border-left:4px solid var(--green);color:#166534}
-.tip-box.orange{background:var(--orange-light);border-left:4px solid var(--orange);color:#92400e}
-.tip-box.red{background:var(--red-light);border-left:4px solid var(--red);color:#991b1b}
-.tip-box.purple{background:var(--purple-light);border-left:4px solid var(--purple);color:#5b21b6}
-.tip-icon{font-size:18px;flex-shrink:0;margin-top:1px}
-.tip-box strong{font-weight:700}
+textarea.field { font-family: var(--sans); min-height: 60px; resize: vertical; }
+.field-static {
+  padding: 10px 14px; background: var(--surface-alt);
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text-muted); font-size: 14px; font-family: var(--mono);
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px; border-radius: 8px; font-size: 14px;
+  font-weight: 600; cursor: pointer; border: none;
+  font-family: var(--sans); transition: all 0.15s;
+}
+.btn:hover { opacity: 0.88; }
+.btn-primary { background: var(--accent); color: var(--white); }
+.btn-secondary {
+  background: transparent; color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.btn-danger {
+  background: transparent; color: var(--danger);
+  border: 1px solid rgba(231,76,94,0.3); padding: 8px 10px;
+}
+
+.grid { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.gap-12 { gap: 12px; }
+
+/* ─── RESULT CARDS ─── */
+.result-card {
+  background: var(--surface-alt); border-radius: 10px; padding: 16px;
+  text-align: center; border: 1px solid transparent;
+}
+.result-card-label {
+  font-size: 10.5px; color: var(--text-dim); text-transform: uppercase;
+  letter-spacing: 0.06em; margin-bottom: 8px;
+}
+.result-card-value {
+  font-size: 22px; font-weight: 700; font-family: var(--mono);
+}
+.result-card-unit { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+
+/* ─── PARAMS BAR ─── */
+.params-bar {
+  display: flex; gap: 24px; padding: 13px 20px;
+  background: var(--accent-soft); border-radius: 8px;
+  border: 1px solid rgba(56,163,241,0.18); margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.params-bar span { font-size: 13px; color: var(--text-muted); }
+.params-bar .hl { color: var(--accent); font-weight: 600; }
+.params-bar .mono { font-family: var(--mono); color: var(--accent); }
+
+/* ─── TABLE ─── */
+.table-wrap { overflow: auto; max-height: 520px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; font-family: var(--mono); }
+.data-table thead { position: sticky; top: 0; z-index: 2; }
+.data-table th {
+  padding: 10px 14px; text-align: right; color: var(--text-muted);
+  font-weight: 600; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.04em; background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 7px 14px; text-align: right; color: var(--text-dim);
+  border-bottom: 1px solid rgba(27,48,68,0.3);
+}
+.data-table tr:hover td { background: rgba(255,255,255,0.015); }
+.td-length { color: var(--warm) !important; }
+.td-weight { color: var(--accent) !important; }
+.td-density { color: var(--green) !important; }
 
 /* ─── COLLAPSIBLE ─── */
-.collapse-btn{
-  width:100%;display:flex;justify-content:space-between;align-items:center;
-  padding:12px 16px;background:var(--gray-50);border:1px solid var(--gray-200);
-  border-radius:var(--radius-sm);color:var(--gray-700);
-  font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);margin-bottom:2px;
+.collapsible {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-bottom: 14px;
 }
-.collapse-btn:hover{background:var(--blue-light)}
-.collapse-btn .arr{transition:transform 0.2s;font-size:11px}
-.collapse-btn.open .arr{transform:rotate(180deg)}
-.collapse-body{
-  display:none;padding:16px;font-size:13.5px;line-height:1.7;color:var(--gray-600);
-  background:var(--white);border:1px solid var(--gray-200);border-top:none;
-  border-radius:0 0 var(--radius-sm) var(--radius-sm);margin-bottom:14px;
+.collapsible-header {
+  width: 100%; padding: 16px 20px; background: transparent; border: none;
+  color: var(--text); font-size: 15px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: space-between; font-family: var(--sans);
 }
-.collapse-body.open{display:block}
-.collapse-body .formula{
-  font-family:var(--mono);font-size:14px;background:var(--gray-900);color:var(--teal);
-  padding:10px 16px;border-radius:var(--radius-xs);margin:10px 0;display:block;
+.collapsible-header:hover { background: rgba(255,255,255,0.02); }
+.collapsible-chevron {
+  transition: transform 0.2s; display: flex;
 }
+.collapsible.open .collapsible-chevron { transform: rotate(90deg); }
+.collapsible-body { padding: 0 20px 20px; display: none; }
+.collapsible.open .collapsible-body { display: block; }
 
-/* ─── THEORY ─── */
-.theory h2{font-size:22px;font-weight:700;color:var(--gray-900);margin:28px 0 8px}
-.theory h3{font-size:17px;font-weight:700;color:var(--blue);margin:20px 0 8px}
-.theory p{font-size:14px;line-height:1.75;color:var(--gray-600);margin-bottom:10px}
-.theory p strong{color:var(--gray-800)}
-.example{
-  background:var(--white);border:1px solid var(--gray-200);
-  border-left:4px solid var(--teal);border-radius:0 var(--radius-sm) var(--radius-sm) 0;
-  padding:18px 20px;margin:16px 0;box-shadow:var(--shadow);
+/* ─── THEORY STYLES ─── */
+.theory-text {
+  font-size: 14px; line-height: 1.78; color: var(--text-muted); margin-bottom: 14px;
 }
-.example h4{font-size:13px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
-.example p{font-size:13.5px;line-height:1.7;color:var(--gray-600);margin-bottom:6px}
-.example .formula{
-  font-family:var(--mono);font-size:13.5px;background:var(--gray-900);color:#7dd3fc;
-  padding:8px 14px;border-radius:var(--radius-xs);margin:8px 0;display:block;
+.theory-text strong { color: var(--text); }
+.theory-text em { color: var(--text); font-style: italic; }
+.formula-box {
+  font-family: var(--mono); font-size: 18px; color: var(--accent);
+  background: var(--accent-soft); padding: 16px 24px; border-radius: 8px;
+  text-align: center; margin: 18px 0;
+  border: 1px solid rgba(56,163,241,0.18);
 }
-.step-list{counter-reset:step;margin:12px 0;padding:0}
-.step-list li{
-  list-style:none;padding:8px 0 8px 42px;position:relative;font-size:13.5px;
-  color:var(--gray-600);border-bottom:1px solid var(--gray-100);
+.example-box {
+  background: var(--surface-alt); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px; margin-bottom: 16px;
 }
-.step-list li::before{
-  counter-increment:step;content:counter(step);
-  position:absolute;left:0;top:6px;width:28px;height:28px;
-  background:var(--blue);color:#fff;font-size:13px;font-weight:700;
-  border-radius:50%;display:flex;align-items:center;justify-content:center;
+.example-title {
+  font-size: 14px; font-weight: 700; margin-bottom: 12px;
 }
-.step-list li strong{color:var(--gray-800)}
+.step-text {
+  font-size: 14px; color: var(--text-muted); line-height: 1.9;
+  font-family: var(--mono);
+}
+.step-result { color: var(--green); font-weight: 700; }
+.species-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
+}
+.species-row {
+  display: flex; justify-content: space-between; padding: 6px 12px;
+  background: var(--bg); border-radius: 6px; font-size: 13px;
+}
+.species-row-name { color: var(--text-muted); }
+.species-row-val { color: var(--accent); font-family: var(--mono); }
+.var-grid {
+  display: grid; grid-template-columns: auto 1fr; gap: 6px 16px;
+  font-size: 14px; line-height: 1.78; color: var(--text-muted);
+}
+.var-sym { color: var(--accent); font-weight: 700; font-family: var(--mono); }
 
-/* ─── LOG ─── */
-.log-entry{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px}
-.log-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.log-type{font-size:13px;font-weight:700;color:var(--blue)}
-.log-time{font-size:11px;color:var(--gray-400)}
-.log-chips{display:flex;flex-wrap:wrap;gap:5px}
-.log-chip{background:var(--gray-100);border-radius:5px;padding:3px 8px;font-size:11.5px}
-.log-chip .k{color:var(--gray-400)}
-.log-chip .v{font-weight:600;color:var(--gray-700);margin-left:3px}
-.empty{text-align:center;padding:50px 20px;color:var(--gray-400)}
+/* ─── CAMERA ─── */
+.camera-placeholder {
+  padding: 48px 20px; text-align: center;
+}
+.camera-icon-circle {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--accent-soft); display: flex; align-items: center;
+  justify-content: center; margin: 0 auto 20px; color: var(--accent);
+}
+.camera-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.camera-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+.camera-error {
+  padding: 12px 16px; background: rgba(231,76,94,0.08);
+  border: 1px solid rgba(231,76,94,0.2); border-radius: 8px;
+  color: var(--danger); font-size: 13px; margin-bottom: 16px;
+  display: none;
+}
+.capture-form-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+}
+.capture-preview {
+  width: 100%; border-radius: 8px; border: 1px solid var(--border);
+  display: block;
+}
+.form-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+.form-group { margin-bottom: 14px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn-row { display: flex; gap: 12px; margin-top: 6px; }
 
-/* ─── TERMS ─── */
-.terms h2{font-size:22px;font-weight:700;color:var(--gray-900);margin-bottom:12px}
-.terms h3{font-size:15px;font-weight:700;color:var(--blue);margin:20px 0 6px}
-.terms p,.terms li{font-size:13.5px;line-height:1.8;color:var(--gray-600)}
-.terms ul{margin:6px 0 14px 20px}
-.terms li{margin-bottom:3px}
+.record-header { font-size: 16px; font-weight: 700; margin-bottom: 16px; margin-top: 8px; }
+.record-card {
+  display: grid; grid-template-columns: 120px 1fr auto; gap: 20px;
+  align-items: center; padding: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; margin-bottom: 12px;
+}
+.record-thumb {
+  width: 120px; height: 80px; object-fit: cover;
+  border-radius: 8px; border: 1px solid var(--border);
+}
+.record-species { font-size: 15px; font-weight: 700; }
+.record-meta { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.record-notes { font-size: 12px; color: var(--text-dim); margin-top: 4px; font-style: italic; }
 
-/* ─── FOOTER ─── */
-.footer{border-top:1px solid var(--gray-200);padding:20px;text-align:center;font-size:11.5px;color:var(--gray-400);margin-top:40px;background:var(--white)}
+video { width: 100%; max-height: 400px; border-radius: 8px; background: #000; object-fit: cover; display: block; }
+
+/* ─── MEASUREMENT TOOL ─── */
+.measure-container { position: relative; display: inline-block; width: 100%; cursor: crosshair; }
+.measure-container img { width: 100%; display: block; border-radius: 8px; }
+.measure-canvas {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  border-radius: 8px; pointer-events: none;
+}
+.measure-steps {
+  padding: 14px 18px; border-radius: 8px; margin-bottom: 16px;
+  font-size: 13px; line-height: 1.7;
+}
+.measure-step-active {
+  background: var(--accent-soft); border: 1px solid rgba(56,163,241,0.25); color: var(--accent);
+}
+.measure-step-done {
+  background: var(--green-soft); border: 1px solid rgba(48,216,120,0.25); color: var(--green);
+}
+.measure-step-waiting {
+  background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-dim);
+}
+.measure-result-box {
+  padding: 16px 20px; border-radius: 10px; margin-top: 16px;
+  background: var(--green-soft); border: 1px solid rgba(48,216,120,0.25);
+  text-align: center;
+}
+.measure-result-value {
+  font-size: 28px; font-weight: 700; color: var(--green);
+  font-family: var(--mono);
+}
+.measure-result-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.measure-toolbar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.measure-badge {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+  border-radius: 6px; font-size: 12px; font-weight: 600;
+}
+.measure-badge-ref { background: rgba(240,176,64,0.12); color: var(--warm); border: 1px solid rgba(240,176,64,0.25); }
+.measure-badge-fish { background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(56,163,241,0.25); }
+.ref-select-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.ref-option {
+  padding: 10px 8px; text-align: center; background: var(--surface-alt);
+  border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+  transition: all 0.15s; font-family: var(--sans); font-size: 12px; color: var(--text-muted);
+}
+.ref-option:hover { border-color: var(--border-hover); color: var(--text); }
+.ref-option.active { border-color: var(--warm); color: var(--warm); background: var(--warm-soft); }
+.ref-option-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+.ref-option-size { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+/* ─── PAGES ─── */
+.page { display: none; }
+.page.active { display: block; }
 
 /* ─── RESPONSIVE ─── */
-@media(max-width:700px){
-  .header-inner{flex-direction:column;height:auto;padding:10px 0;gap:6px}
-  .nav{width:100%;overflow-x:auto}
-  .nav button{font-size:12px;padding:0 10px}
-  .container{padding:14px}
-  .card{padding:18px}
-  .crest-table{font-size:11px}
-  .crest-table th,.crest-table td{padding:6px 4px}
+@media (max-width: 820px) {
+  .app-body { flex-direction: column; }
+  .sidebar {
+    flex-direction: row; width: 100% !important;
+    border-right: none !important; border-bottom: 1px solid var(--border);
+    padding: 8px !important; gap: 4px; overflow-x: auto;
+    min-height: auto;
+  }
+  .nav-btn { white-space: nowrap; padding: 10px 14px !important; font-size: 13px; }
+  .sidebar-spacer, .quick-ref { display: none; }
+  .main-content { padding: 20px !important; }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .capture-form-grid { grid-template-columns: 1fr; }
+  .record-card { grid-template-columns: 80px 1fr auto; }
+  .species-grid { grid-template-columns: 1fr; }
+  .ref-select-grid { grid-template-columns: repeat(2, 1fr); }
+  .params-bar { gap: 12px; }
 }
+
+/* ─── ANIMATION ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page.active { animation: fadeUp 0.3s ease; }
 </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-inner">
-    <div class="logo">
-      <div class="logo-icon">🐟</div>
-      <h1>Flow Like a Pro<span>Hatchery Measurements & Calculations</span></h1>
-    </div>
-    <nav class="nav" id="mainNav">
-      <button class="active" data-p="calc">Calculators</button>
-      <button data-p="theory">Learn the Theory</button>
-      <button data-p="log">Data Log <span class="badge" id="badge" style="display:none">0</span></button>
-      <button data-p="terms">Terms of Use</button>
-    </nav>
+<!-- ═══════════ HEADER ═══════════ -->
+<div class="app-header">
+  <div class="logo-mark">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 12c3-6 11-6 14.5 0-3.5 6-11.5 6-14.5 0z"/><path d="M2 12S4 9 6.5 12C4 15 2 12 2 12z"/><circle cx="16" cy="12" r="1" fill="currentColor"/></svg>
   </div>
-</header>
-
-<div class="container">
-
-<!-- ================================================================ -->
-<!--                     CALCULATORS PAGE                             -->
-<!-- ================================================================ -->
-<div class="page active" id="p-calc">
-
-<!-- ── CREST SUMP FLOW LOOKUP ── -->
-<div class="card" id="sec-crest">
-  <div class="card-title">🔍 Crest Height → Flow Rate (GPM)</div>
-  <div class="card-sub">Measure the crest height in your sump and look up the flow rate using the hatchery reference chart</div>
-
-  <button class="collapse-btn" onclick="tog(this)"><span>ℹ️ How to measure crest height</span><span class="arr">▾</span></button>
-  <div class="collapse-body">
-    <p>The <strong>crest height</strong> is the height of water flowing over the top edge (crest) of a sump pipe. It tells you how much water is flowing.</p>
-    <ol class="step-list">
-      <li><strong>Find the sump.</strong> It's the vertical pipe where water overflows from your raceway or tank.</li>
-      <li><strong>Measure the diameter</strong> of the sump pipe (6", 8", 10", or 12").</li>
-      <li><strong>Measure the crest height</strong> — the distance from the top rim of the sump down to where the water surface is inside the pipe. Use a ruler held across the top.</li>
-      <li><strong>Measure in multiple spots</strong> around the rim and take the average (the water may be uneven).</li>
-      <li><strong>Look up the flow</strong> on the chart below using your sump diameter and crest height.</li>
-    </ol>
-    <div class="tip-box green"><span class="tip-icon">💡</span><div><strong>Pro Tip:</strong> Measure crest height in multiple locations around the sump and take the average. Water height can vary!</div></div>
+  <div>
+    <div class="logo-text">Length Weight Calculator</div>
+    <div class="logo-sub">Version 1.0</div>
   </div>
-
-  <!-- VISUAL DIAGRAM: Sump Crest -->
-  <div class="diagram">
-    <svg viewBox="0 0 460 220" xmlns="http://www.w3.org/2000/svg" style="max-width:420px">
-      <!-- Sump pipe -->
-      <rect x="140" y="30" width="100" height="170" rx="4" fill="#e2e8f0" stroke="#475569" stroke-width="2"/>
-      <!-- Water inside -->
-      <rect x="142" y="80" width="96" height="118" rx="2" fill="#7dd3fc" opacity="0.5"/>
-      <!-- Water overflow -->
-      <path d="M140 80 Q130 70 120 85 Q110 100 100 110 L100 200" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="5,3"/>
-      <path d="M240 80 Q250 70 260 85 Q270 100 280 110 L280 200" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="5,3"/>
-      <!-- Crest height arrow -->
-      <line x1="280" y1="30" x2="280" y2="80" stroke="#dc3545" stroke-width="2"/>
-      <line x1="273" y1="30" x2="287" y2="30" stroke="#dc3545" stroke-width="2"/>
-      <line x1="273" y1="80" x2="287" y2="80" stroke="#dc3545" stroke-width="2"/>
-      <polygon points="280,35 276,42 284,42" fill="#dc3545"/>
-      <polygon points="280,75 276,68 284,68" fill="#dc3545"/>
-      <!-- Labels -->
-      <text x="302" y="60" font-size="13" font-weight="700" fill="#dc3545" font-family="Outfit">Crest</text>
-      <text x="302" y="73" font-size="13" font-weight="700" fill="#dc3545" font-family="Outfit">Height</text>
-      <!-- Pipe rim label -->
-      <text x="155" y="24" font-size="11" fill="#475569" font-family="Outfit" font-weight="600">← Sump pipe rim →</text>
-      <!-- Water label -->
-      <text x="158" y="145" font-size="12" fill="#0369a1" font-family="Outfit" font-weight="600">Water</text>
-      <text x="158" y="160" font-size="12" fill="#0369a1" font-family="Outfit" font-weight="600">Level</text>
-      <!-- Diameter arrow -->
-      <line x1="140" y1="210" x2="240" y2="210" stroke="#475569" stroke-width="1.5"/>
-      <polygon points="143,210 149,207 149,213" fill="#475569"/>
-      <polygon points="237,210 231,207 231,213" fill="#475569"/>
-      <text x="160" y="207" font-size="11" fill="#475569" font-family="Outfit" font-weight="600">Diameter</text>
-      <!-- Overflow arrows -->
-      <text x="30" y="140" font-size="11" fill="#0ea5e9" font-family="Outfit">overflow</text>
-      <text x="310" y="140" font-size="11" fill="#0ea5e9" font-family="Outfit">overflow</text>
-    </svg>
+  <div class="header-right">
+    Educational &amp; Research Use<br>
+    W = c &times; L<sup>n</sup>
   </div>
-
-  <div class="field-row">
-    <div class="field">
-      <label>Sump Diameter</label>
-      <select id="crest-diam" onchange="lookupCrest()">
-        <option value="">— Select —</option>
-        <option value="12">12" Sump</option>
-        <option value="10">10" Sump</option>
-        <option value="8">8" Sump</option>
-        <option value="6">6" Sump</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Crest Height <span class="unit">(inches)</span></label>
-      <select id="crest-height" onchange="lookupCrest()">
-        <option value="">— Select —</option>
-        <option value="0.5">½"</option><option value="0.75">¾"</option>
-        <option value="1">1"</option><option value="1.125">1⅛"</option>
-        <option value="1.25">1¼"</option><option value="1.375">1⅜"</option>
-        <option value="1.5">1½"</option><option value="1.625">1⅝"</option>
-        <option value="1.75">1¾"</option><option value="1.875">1⅞"</option>
-        <option value="2">2"</option><option value="2.125">2⅛"</option>
-        <option value="2.25">2¼"</option><option value="2.375">2⅜"</option>
-        <option value="2.5">2½"</option><option value="2.625">2⅝"</option>
-        <option value="2.75">2¾"</option><option value="2.875">2⅞"</option>
-        <option value="3">3"</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="results" id="crest-result-area" style="display:none">
-    <div class="result primary">
-      <div class="rlabel">Flow Rate from Chart</div>
-      <div class="rval"><span id="crest-gpm">—</span><span class="runit">GPM</span></div>
-    </div>
-  </div>
-
-  <div class="tip-box blue" style="margin-top:14px">
-    <span class="tip-icon">📊</span>
-    <div><strong>Full Reference Chart</strong> (from your class lesson "Flow Like a Pro")</div>
-  </div>
-
-  <table class="crest-table" id="crestTable">
-    <thead>
-      <tr><th>Crest (inch)</th><th>12" Sump</th><th>10" Sump</th><th>8" Sump</th><th>6" Sump</th></tr>
-    </thead>
-    <tbody id="crestBody"></tbody>
-  </table>
-
-  <button class="save-btn" onclick="logCrest()">＋ Save Crest Reading to Log</button>
 </div>
 
-<!-- ── EXCHANGE TIME ── -->
-<div class="card" id="sec-exchange">
-  <div class="card-title">⏱️ Exchange Time</div>
-  <div class="card-sub">How long does it take to replace all the water in your tank, pond, or raceway?</div>
-
-  <button class="collapse-btn" onclick="tog(this)"><span>ℹ️ What is exchange time?</span><span class="arr">▾</span></button>
-  <div class="collapse-body">
-    <p><strong>Exchange Time</strong> tells you how many minutes it takes for the full volume of water to be replaced by new incoming water. This is critical for fish health — it determines how quickly waste is flushed and fresh oxygen arrives.</p>
-    <span class="formula">Exchange Time = Volume ÷ Flow Rate</span>
-    <p><strong>Keep units the same!</strong> If flow is in GPM (gallons per minute), make sure volume is in gallons.</p>
-    <div class="tip-box orange"><span class="tip-icon">⚠️</span><div><strong>Common mistake:</strong> Mixing units! If your volume is in cubic feet, convert to gallons first (1 ft³ = 7.48 gallons).</div></div>
-  </div>
-
-  <div class="diagram">
-    <svg viewBox="0 0 500 140" xmlns="http://www.w3.org/2000/svg" style="max-width:480px">
-      <!-- Tank -->
-      <rect x="120" y="20" width="260" height="100" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
-      <text x="210" y="65" font-size="14" font-weight="700" fill="#0369a1" font-family="Outfit">Tank Volume</text>
-      <text x="215" y="82" font-size="12" fill="#0369a1" font-family="Outfit">(gallons)</text>
-      <!-- Inflow -->
-      <line x1="40" y1="70" x2="120" y2="70" stroke="#16a34a" stroke-width="3"/>
-      <polygon points="115,64 125,70 115,76" fill="#16a34a"/>
-      <text x="42" y="58" font-size="11" font-weight="600" fill="#16a34a" font-family="Outfit">INFLOW</text>
-      <text x="42" y="90" font-size="12" font-weight="700" fill="#16a34a" font-family="Outfit,JetBrains Mono">? GPM</text>
-      <!-- Outflow -->
-      <line x1="380" y1="70" x2="460" y2="70" stroke="#dc3545" stroke-width="3"/>
-      <polygon points="455,64 465,70 455,76" fill="#dc3545"/>
-      <text x="400" y="58" font-size="11" font-weight="600" fill="#dc3545" font-family="Outfit">OUTFLOW</text>
-      <!-- Formula -->
-      <text x="160" y="108" font-size="11" font-weight="600" fill="#475569" font-family="JetBrains Mono">Time = Volume ÷ Flow</text>
-    </svg>
-  </div>
-
-  <div class="field-row">
-    <div class="field">
-      <label>Tank/Pond Volume <span class="unit">(gallons)</span></label>
-      <input type="number" step="any" id="ex-vol" placeholder="e.g. 5000" oninput="calcExchange()">
-      <div class="hint">Don't know? Use the Volume Calculator below!</div>
-    </div>
-    <div class="field">
-      <label>Flow Rate <span class="unit">(GPM)</span></label>
-      <input type="number" step="any" id="ex-flow" placeholder="e.g. 113" oninput="calcExchange()">
-      <div class="hint">From crest chart above or direct measurement</div>
-    </div>
-  </div>
-
-  <div class="results cols-2">
-    <div class="result primary">
-      <div class="rlabel">Exchange Time</div>
-      <div class="rval"><span id="ex-min">—</span><span class="runit">minutes</span></div>
-    </div>
-    <div class="result">
-      <div class="rlabel">Exchange Time</div>
-      <div class="rval"><span id="ex-hr">—</span><span class="runit">hours</span></div>
-    </div>
-  </div>
-  <div class="results" style="margin-top:10px">
-    <div class="result green">
-      <div class="rlabel">Exchanges per Hour</div>
-      <div class="rval"><span id="ex-perhr">—</span><span class="runit">turns/hr</span></div>
-    </div>
-  </div>
-
-  <button class="save-btn" onclick="logExchange()">＋ Save Exchange Time to Log</button>
-</div>
-
-<!-- ── VOLUME CALCULATOR ── -->
-<div class="card" id="sec-volume">
-  <div class="card-title">📐 Volume Calculator</div>
-  <div class="card-sub">Calculate tank, raceway, pond, or pipe volume — includes the special cone-bottom pond from class!</div>
-
-  <button class="collapse-btn" onclick="tog(this)"><span>ℹ️ Volume formulas from class</span><span class="arr">▾</span></button>
-  <div class="collapse-body">
-    <p>From your class lesson "Flow Like a Pro":</p>
-    <span class="formula">Rectangle/Raceway: V = L × W × H</span>
-    <span class="formula">Cylinder (round tank): V = π × r² × h</span>
-    <span class="formula">Cone: V = ⅓ × π × r² × h</span>
-    <span class="formula">Cone-Bottom Pond: V = (π × r² × h₂) + (⅓ × π × r² × h₃)</span>
-    <div class="tip-box orange"><span class="tip-icon">📏</span><div><strong>Remember:</strong> Measure diameter first → divide by 2 for radius. Convert units BEFORE plugging into formulas. Round at the FINAL step only!</div></div>
-  </div>
-
-  <div class="pills" id="shapePills">
-    <button class="pill active" onclick="setShape('rect',this)">Rectangle / Raceway</button>
-    <button class="pill" onclick="setShape('cyl',this)">Cylinder (Round Tank)</button>
-    <button class="pill" onclick="setShape('cone',this)">Cone</button>
-    <button class="pill" onclick="setShape('conepond',this)">Cone-Bottom Pond ⭐</button>
-  </div>
-
-  <!-- RECTANGLE -->
-  <div id="shape-rect">
-    <div class="diagram">
-      <svg viewBox="0 0 340 180" xmlns="http://www.w3.org/2000/svg" style="max-width:320px">
-        <path d="M60,50 L220,50 L260,20 L100,20 Z" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
-        <path d="M220,50 L260,20 L260,130 L220,160 Z" fill="#93c5fd" stroke="#2563eb" stroke-width="1.5"/>
-        <rect x="60" y="50" width="160" height="110" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-        <text x="115" y="112" font-size="13" font-weight="600" fill="#1e40af" font-family="Outfit">V = L×W×H</text>
-        <!-- Labels -->
-        <text x="110" y="170" font-size="11" fill="#2563eb" font-weight="600" font-family="Outfit">L (length)</text>
-        <text x="15" y="110" font-size="11" fill="#2563eb" font-weight="600" font-family="Outfit" transform="rotate(-90,30,110)">H (height)</text>
-        <text x="245" y="80" font-size="11" fill="#2563eb" font-weight="600" font-family="Outfit" transform="rotate(-70,252,75)">W</text>
-      </svg>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Length <span class="unit">(ft)</span></label><input type="number" step="any" id="r-l" oninput="calcVol()"></div>
-      <div class="field"><label>Width <span class="unit">(ft)</span></label><input type="number" step="any" id="r-w" oninput="calcVol()"></div>
-    </div>
-    <div class="field"><label>Height / Depth <span class="unit">(ft)</span></label><input type="number" step="any" id="r-h" oninput="calcVol()"></div>
-  </div>
-
-  <!-- CYLINDER -->
-  <div id="shape-cyl" style="display:none">
-    <div class="diagram">
-      <svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg" style="max-width:260px">
-        <ellipse cx="140" cy="40" rx="80" ry="20" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.5"/>
-        <rect x="60" y="40" width="160" height="120" fill="#dcfce7" stroke="none"/>
-        <line x1="60" y1="40" x2="60" y2="160" stroke="#16a34a" stroke-width="1.5"/>
-        <line x1="220" y1="40" x2="220" y2="160" stroke="#16a34a" stroke-width="1.5"/>
-        <ellipse cx="140" cy="160" rx="80" ry="20" fill="#86efac" stroke="#16a34a" stroke-width="1.5"/>
-        <text x="95" y="108" font-size="13" font-weight="600" fill="#166534" font-family="Outfit">V = πr²h</text>
-        <!-- Diameter line -->
-        <line x1="60" y1="40" x2="220" y2="40" stroke="#dc3545" stroke-width="1" stroke-dasharray="4,3"/>
-        <text x="110" y="33" font-size="10" fill="#dc3545" font-weight="600" font-family="Outfit">diameter</text>
-        <text x="28" y="105" font-size="10" fill="#16a34a" font-weight="600" font-family="Outfit" transform="rotate(-90,34,105)">h (height)</text>
-      </svg>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Diameter <span class="unit">(ft)</span></label><input type="number" step="any" id="c-d" oninput="calcVol()"><div class="hint">Measure across the center, divide by 2 = radius</div></div>
-      <div class="field"><label>Height / Depth <span class="unit">(ft)</span></label><input type="number" step="any" id="c-h" oninput="calcVol()"></div>
-    </div>
-  </div>
-
-  <!-- CONE -->
-  <div id="shape-cone" style="display:none">
-    <div class="diagram">
-      <svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg" style="max-width:260px">
-        <ellipse cx="140" cy="50" rx="80" ry="20" fill="#fde68a" stroke="#d97706" stroke-width="1.5"/>
-        <line x1="60" y1="50" x2="140" y2="180" stroke="#d97706" stroke-width="1.5"/>
-        <line x1="220" y1="50" x2="140" y2="180" stroke="#d97706" stroke-width="1.5"/>
-        <path d="M60,50 Q140,90 220,50 L140,180 Z" fill="#fef3c7" stroke="none"/>
-        <text x="90" y="110" font-size="13" font-weight="600" fill="#92400e" font-family="Outfit">V = ⅓πr²h</text>
-        <text x="23" y="120" font-size="10" fill="#d97706" font-weight="600" font-family="Outfit" transform="rotate(-90,30,118)">h (height)</text>
-      </svg>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Diameter <span class="unit">(ft)</span></label><input type="number" step="any" id="co-d" oninput="calcVol()"></div>
-      <div class="field"><label>Height <span class="unit">(ft)</span></label><input type="number" step="any" id="co-h" oninput="calcVol()"></div>
-    </div>
-  </div>
-
-  <!-- CONE-BOTTOM POND -->
-  <div id="shape-conepond" style="display:none">
-    <div class="tip-box purple"><span class="tip-icon">⭐</span><div><strong>Special: Cone-Bottom Pond (Pond 2 from class)</strong> — Floor gently slopes with a cone-shaped bottom. Measure the full diameter (including under walkway). Use the sump depth (h₁) minus the wall depth (h₂) to get the cone height (h₃).</div></div>
-    <div class="diagram">
-      <svg viewBox="0 0 380 260" xmlns="http://www.w3.org/2000/svg" style="max-width:360px">
-        <!-- Cylinder part -->
-        <ellipse cx="190" cy="40" rx="110" ry="22" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5" opacity="0.5"/>
-        <rect x="80" y="40" width="220" height="90" fill="#ede9fe" stroke="none"/>
-        <line x1="80" y1="40" x2="80" y2="130" stroke="#7c3aed" stroke-width="1.5"/>
-        <line x1="300" y1="40" x2="300" y2="130" stroke="#7c3aed" stroke-width="1.5"/>
-        <ellipse cx="190" cy="130" rx="110" ry="22" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
-        <!-- Cone part -->
-        <line x1="80" y1="130" x2="190" y2="230" stroke="#7c3aed" stroke-width="1.5"/>
-        <line x1="300" y1="130" x2="190" y2="230" stroke="#7c3aed" stroke-width="1.5"/>
-        <path d="M80,130 Q190,160 300,130 L190,230 Z" fill="#f5f3ff" stroke="none"/>
-        <!-- Labels -->
-        <text x="150" y="90" font-size="12" font-weight="600" fill="#5b21b6" font-family="Outfit">Cylinder</text>
-        <text x="155" y="190" font-size="12" font-weight="600" fill="#5b21b6" font-family="Outfit">Cone</text>
-        <!-- h2 -->
-        <line x1="55" y1="40" x2="55" y2="130" stroke="#0ea5e9" stroke-width="2"/>
-        <text x="30" y="90" font-size="11" font-weight="700" fill="#0ea5e9" font-family="Outfit">h₂</text>
-        <!-- h3 -->
-        <line x1="55" y1="130" x2="55" y2="230" stroke="#dc3545" stroke-width="2"/>
-        <text x="30" y="185" font-size="11" font-weight="700" fill="#dc3545" font-family="Outfit">h₃</text>
-        <!-- h1 -->
-        <line x1="340" y1="40" x2="340" y2="230" stroke="#16a34a" stroke-width="2"/>
-        <text x="350" y="140" font-size="11" font-weight="700" fill="#16a34a" font-family="Outfit">h₁</text>
-        <!-- formula -->
-        <text x="90" y="252" font-size="11" font-weight="600" fill="#475569" font-family="JetBrains Mono">h₃ = h₁ - h₂ (sump depth - wall depth)</text>
-      </svg>
-    </div>
-    <div class="field"><label>Full Diameter <span class="unit">(ft)</span></label><input type="number" step="any" id="cp-d" oninput="calcVol()"><div class="hint">Measure across the whole pond — including under walkway</div></div>
-    <div class="field-row">
-      <div class="field"><label>h₁ — Sump Depth (total) <span class="unit">(ft)</span></label><input type="number" step="any" id="cp-h1" oninput="calcVol()"><div class="hint">Deepest point at center</div></div>
-      <div class="field"><label>h₂ — Wall Depth <span class="unit">(ft)</span></label><input type="number" step="any" id="cp-h2" oninput="calcVol()"><div class="hint">Depth at the wall edge</div></div>
-    </div>
-  </div>
-
-  <!-- VOLUME RESULTS -->
-  <div class="results" id="vol-results">
-    <div class="result primary">
-      <div class="rlabel">Volume</div>
-      <div class="rval"><span id="vol-ft3">—</span><span class="runit">ft³</span></div>
-    </div>
-    <div class="results cols-2" style="margin-top:0">
-      <div class="result green">
-        <div class="rlabel">Volume</div>
-        <div class="rval"><span id="vol-gal">—</span><span class="runit">gallons</span></div>
-      </div>
-      <div class="result">
-        <div class="rlabel">Volume</div>
-        <div class="rval"><span id="vol-L">—</span><span class="runit">liters</span></div>
+<!-- ═══════════ BODY ═══════════ -->
+<div class="app-body">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <button class="nav-btn active" data-page="calculator" onclick="showPage('calculator')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><rect x="7" y="5" width="10" height="4" rx="1"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/><circle cx="9" cy="17" r="1" fill="currentColor"/><circle cx="15" cy="17" r="1" fill="currentColor"/></svg>
+      Calculator
+    </button>
+    <button class="nav-btn" data-page="tables" onclick="showPage('tables')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+      Tables
+    </button>
+    <button class="nav-btn" data-page="theory" onclick="showPage('theory')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      Theory
+    </button>
+    <button class="nav-btn" data-page="camera" onclick="showPage('camera')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Camera
+    </button>
+    <button class="nav-btn" data-page="terms" onclick="showPage('terms')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Terms
+    </button>
+    <div class="sidebar-spacer"></div>
+    <div class="quick-ref">
+      <div class="quick-ref-title">Quick Ref</div>
+      <div class="quick-ref-body">
+        W = c &times; L<sup>n</sup><br>
+        L = (W/c)<sup>1/n</sup><br>
+        K = 100W/L<sup>n</sup>
       </div>
     </div>
   </div>
 
-  <button class="save-btn" onclick="logVol()">＋ Save Volume to Log</button>
-</div>
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
 
-<!-- ── SURFACE AREA ── -->
-<div class="card" id="sec-area">
-  <div class="card-title">📏 Surface Area Calculator</div>
-  <div class="card-sub">Calculate the area of the top or bottom of a tank, pond, or raceway</div>
+    <!-- ════════════ CALCULATOR PAGE ════════════ -->
+    <div class="page active" id="page-calculator">
+      <div class="page-title">Length-Weight Calculator</div>
+      <p class="page-desc">Compute weight, length, stocking density, and condition factors for freshwater species.</p>
 
-  <div class="pills" id="areaPills">
-    <button class="pill active" onclick="setArea('arect',this)">Rectangle</button>
-    <button class="pill" onclick="setArea('acirc',this)">Circle</button>
-  </div>
-
-  <div id="area-arect">
-    <div class="field-row">
-      <div class="field"><label>Length <span class="unit">(ft)</span></label><input type="number" step="any" id="a-l" oninput="calcArea()"></div>
-      <div class="field"><label>Width <span class="unit">(ft)</span></label><input type="number" step="any" id="a-w" oninput="calcArea()"></div>
-    </div>
-    <div class="tip-box blue"><span class="tip-icon">📐</span><div><strong>Formula:</strong> A = L × W</div></div>
-  </div>
-  <div id="area-acirc" style="display:none">
-    <div class="field"><label>Diameter <span class="unit">(ft)</span></label><input type="number" step="any" id="a-d" oninput="calcArea()"><div class="hint">Measure diameter → radius = diameter ÷ 2</div></div>
-    <div class="tip-box blue"><span class="tip-icon">📐</span><div><strong>Formula:</strong> A = π × r² &nbsp;(π ≈ 3.14159)</div></div>
-  </div>
-
-  <div class="results">
-    <div class="result primary">
-      <div class="rlabel">Surface Area</div>
-      <div class="rval"><span id="sa-ft2">—</span><span class="runit">ft²</span></div>
-    </div>
-  </div>
-</div>
-
-<!-- ── UNIT CONVERTER ── -->
-<div class="card">
-  <div class="card-title">🔄 Quick Unit Converter</div>
-  <div class="card-sub">Convert between common hatchery units</div>
-  <div class="field-row">
-    <div class="field"><label>Cubic Feet (ft³)</label><input type="number" step="any" id="uc-ft3" oninput="convFt3()"></div>
-    <div class="field"><label>Gallons</label><input type="number" step="any" id="uc-gal" oninput="convGal()"></div>
-  </div>
-  <div class="field-row">
-    <div class="field"><label>Liters</label><input type="number" step="any" id="uc-L" oninput="convL()"></div>
-    <div class="field"><label>Cubic Meters (m³)</label><input type="number" step="any" id="uc-m3" oninput="convM3()"></div>
-  </div>
-  <div class="tip-box green"><span class="tip-icon">🔑</span><div><strong>Key conversions:</strong> 1 ft³ = 7.48052 gal = 28.3168 L &nbsp;|&nbsp; 1 gal = 3.78541 L &nbsp;|&nbsp; 1 m³ = 264.172 gal</div></div>
-</div>
-
-</div><!-- end calc page -->
-
-<!-- ================================================================ -->
-<!--                   THEORY & EXAMPLES PAGE                         -->
-<!-- ================================================================ -->
-<div class="page" id="p-theory">
-<div class="theory">
-
-<div class="card">
-  <div class="card-title">📚 Learn the Theory</div>
-  <div class="card-sub">Understanding the science behind every hatchery flow calculation</div>
-</div>
-
-<div class="card">
-  <h2>Where Does All This Math Come From?</h2>
-  <p>Every flow rate, volume, and exchange calculation you use at the hatchery traces back to one fundamental principle in physics:</p>
-  <div class="tip-box purple"><span class="tip-icon">🎓</span><div><strong>The Continuity Equation</strong> — based on the <strong>Conservation of Mass</strong>. Water flowing into a system must equal water flowing out (it can't just appear or disappear). This was established by scientists <strong>Leonhard Euler</strong> and <strong>Daniel Bernoulli</strong> in the 1700s.</div></div>
-  <p>In simple terms: <strong>What goes in must come out.</strong> If you know the pipe size and the water speed, you can calculate exactly how much water is flowing. If you know the volume and the flow, you can calculate how long it takes to replace the water.</p>
-</div>
-
-<div class="card">
-  <h2>General Measuring Guidelines</h2>
-  <p>From your class lesson — these habits will prevent the most common errors:</p>
-  <div class="tip-box green"><span class="tip-icon">✅</span><div>
-    <strong>Record units with ALL measurements</strong> — say "25 cm" not just "25"<br>
-    <strong>Measure diameter first</strong> for circles → divide by 2 for radius<br>
-    <strong>Convert units BEFORE plugging into formulas</strong><br>
-    <strong>Round at the final step, not each step</strong> — small errors compound quickly!<br>
-    <strong>Measure twice</strong> — check with a partner when possible
-  </div></div>
-  <div class="tip-box red"><span class="tip-icon">🚫</span><div>
-    <strong>Common Errors to Avoid:</strong><br>
-    • Start at the 0 mark, not the edge of the tool<br>
-    • Keep rulers and tapes straight — no bending or sagging<br>
-    • Read liquid volume at eye level from the bottom of the meniscus<br>
-    • Measure straight through the center for diameters<br>
-    • Be mindful of interior vs exterior dimensions
-  </div></div>
-</div>
-
-<div class="card">
-  <h2>The Key Formulas</h2>
-
-  <h3>1. Surface Area</h3>
-  <div class="example">
-    <h4>Rectangle</h4>
-    <span class="formula">A = L × W</span>
-    <p>L = length, W = width. Used for flat surfaces of tanks and raceways.</p>
-  </div>
-  <div class="example">
-    <h4>Circle</h4>
-    <span class="formula">A = π × r²</span>
-    <p>r = radius (half of diameter), π ≈ 3.14159. Used for round tanks and pipe openings.</p>
-  </div>
-
-  <h3>2. Volume</h3>
-  <div class="example">
-    <h4>Rectangle / Raceway / Trough</h4>
-    <span class="formula">V = L × W × H</span>
-    <p>L = length, W = width, H = height (depth). Think of it as stacking layers of area.</p>
-  </div>
-  <div class="example">
-    <h4>Cylinder (Round Tank, Pipe, Bucket)</h4>
-    <span class="formula">V = π × r² × h</span>
-    <p>r = radius, h = height. It's just the circle area multiplied by height.</p>
-  </div>
-  <div class="example">
-    <h4>Cone (Conical Tanks, Funnels)</h4>
-    <span class="formula">V = ⅓ × π × r² × h</span>
-    <p>Same as cylinder but divided by 3 — a cone fits exactly 3 times inside a cylinder.</p>
-  </div>
-  <div class="example" style="border-left-color:var(--purple)">
-    <h4 style="color:var(--purple)">⭐ Cone-Bottom Pond (Pond 2 from Class)</h4>
-    <p>The floor gently slopes to a cone-shaped bottom. You split it into a cylinder on top + cone on the bottom:</p>
-    <span class="formula">h₃ = h₁ − h₂  (sump depth − wall depth = cone height)</span>
-    <span class="formula">V = (π × r² × h₂) + (⅓ × π × r² × h₃)</span>
-    <p>Measure the <strong>full diameter</strong> including under any suspended walkway.</p>
-  </div>
-
-  <h3>3. Flow Rate & Exchange Time</h3>
-  <div class="example">
-    <h4>Exchange Time</h4>
-    <span class="formula">Exchange Time = Volume ÷ Flow Rate</span>
-    <p>If volume is in gallons and flow in GPM, the result is in minutes. This tells you how long it takes to completely replace the water in your system.</p>
-  </div>
-  <div class="example">
-    <h4>Measuring Flow with Crest Height</h4>
-    <p>In hatcheries, we measure the <strong>crest height</strong> — the height of water flowing over the top of a sump pipe. Using the sump diameter and crest height, we look up the flow rate (GPM) on a reference chart. This method comes from weir flow principles where discharge is proportional to the head of water raised to the 3/2 power.</p>
-  </div>
-</div>
-
-<div class="card">
-  <h2>Worked Examples</h2>
-
-  <div class="example">
-    <h4>Example 1 — Raceway Volume</h4>
-    <p><strong>Problem:</strong> A raceway is 100 ft long, 5 ft wide, and 2.5 ft deep. How many gallons does it hold?</p>
-    <span class="formula">V = L × W × H = 100 × 5 × 2.5 = 1,250 ft³</span>
-    <span class="formula">Gallons = 1,250 × 7.48 = 9,350 gallons</span>
-    <p><strong>Answer:</strong> The raceway holds about <strong>9,350 gallons</strong>.</p>
-  </div>
-
-  <div class="example">
-    <h4>Example 2 — Exchange Time</h4>
-    <p><strong>Problem:</strong> That same 9,350-gallon raceway has a flow of 113 GPM (from a 12" sump with 1" crest height). What's the exchange time?</p>
-    <span class="formula">Exchange Time = 9,350 ÷ 113 = 82.7 minutes ≈ 1.4 hours</span>
-    <p><strong>Answer:</strong> The water is fully replaced about every <strong>83 minutes</strong>. That's roughly <strong>0.7 exchanges per hour</strong>.</p>
-  </div>
-
-  <div class="example">
-    <h4>Example 3 — Round Tank Volume</h4>
-    <p><strong>Problem:</strong> A circular rearing tank is 12 ft in diameter and 4 ft deep. How many gallons?</p>
-    <span class="formula">r = 12 ÷ 2 = 6 ft</span>
-    <span class="formula">V = π × 6² × 4 = 3.14159 × 36 × 4 = 452.4 ft³</span>
-    <span class="formula">Gallons = 452.4 × 7.48 = 3,384 gallons</span>
-    <p><strong>Answer:</strong> About <strong>3,384 gallons</strong>.</p>
-  </div>
-
-  <div class="example" style="border-left-color:var(--purple)">
-    <h4 style="color:var(--purple)">Example 4 — Cone-Bottom Pond (Pond 2)</h4>
-    <p><strong>Problem:</strong> Pond 2 is 20 ft diameter. The sump depth (h₁) is 6 ft and the wall depth (h₂) is 3 ft. What's the volume?</p>
-    <span class="formula">r = 20 ÷ 2 = 10 ft</span>
-    <span class="formula">h₃ = h₁ − h₂ = 6 − 3 = 3 ft (cone height)</span>
-    <span class="formula">Cylinder: π × 10² × 3 = 942.5 ft³</span>
-    <span class="formula">Cone: ⅓ × π × 10² × 3 = 314.2 ft³</span>
-    <span class="formula">Total = 942.5 + 314.2 = 1,256.6 ft³ = 9,400 gallons</span>
-    <p><strong>Answer:</strong> Pond 2 holds about <strong>9,400 gallons</strong>.</p>
-  </div>
-
-  <div class="example">
-    <h4>Example 5 — Using the Crest Chart</h4>
-    <p><strong>Problem:</strong> You measure a 10" sump with crest heights of 1.5", 1.25", and 1.5" at three spots. What's the flow?</p>
-    <span class="formula">Average crest = (1.5 + 1.25 + 1.5) ÷ 3 = 1.42"</span>
-    <p>Round to the nearest value on the chart: <strong>1.375"</strong> or <strong>1.5"</strong></p>
-    <span class="formula">At 1.5" on a 10" sump → 176 GPM</span>
-    <span class="formula">At 1.375" on a 10" sump → 153 GPM</span>
-    <p><strong>Answer:</strong> The flow is approximately <strong>153–176 GPM</strong>. You could interpolate to about <strong>165 GPM</strong>.</p>
-  </div>
-</div>
-
-<div class="card">
-  <h2>Why This Matters for Fish</h2>
-  <p>In a hatchery, water flow is literally <strong>life or death</strong> for the fish. Here's why each calculation matters:</p>
-  <div class="tip-box blue"><span class="tip-icon">🫧</span><div><strong>Oxygen:</strong> Fish need dissolved oxygen. Fresh flowing water brings oxygen in. If the exchange time is too long, oxygen drops and fish suffocate.</div></div>
-  <div class="tip-box orange"><span class="tip-icon">⚗️</span><div><strong>Ammonia:</strong> Fish produce ammonia as waste. Flowing water flushes it out. If flow is too slow, ammonia builds up and becomes toxic.</div></div>
-  <div class="tip-box green"><span class="tip-icon">🌡️</span><div><strong>Temperature:</strong> Incoming water helps regulate temperature. Consistent flow = consistent temperature = less stress on the fish.</div></div>
-  <div class="tip-box purple"><span class="tip-icon">🧹</span><div><strong>Waste Removal:</strong> Uneaten feed and feces need to be flushed out. Adequate flow keeps the rearing environment clean.</div></div>
-  <p>For <strong>salmonid hatcheries</strong> (trout, salmon), a water exchange rate of <strong>2–3 times per hour</strong> is common. That means the entire tank volume should be replaced every <strong>20–30 minutes</strong>.</p>
-</div>
-
-</div><!-- end theory -->
-</div><!-- end theory page -->
-
-<!-- ================================================================ -->
-<!--                       DATA LOG PAGE                              -->
-<!-- ================================================================ -->
-<div class="page" id="p-log">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div>
-        <div class="card-title">📋 Data Log</div>
-        <div class="card-sub" id="logCount" style="margin-bottom:0">No records saved</div>
+      <div class="grid grid-2" style="margin-bottom:20px">
+        <div>
+          <label class="field-label">Species</label>
+          <select class="field" id="calc-species" onchange="calcUpdate()"></select>
+        </div>
+        <div>
+          <label class="field-label">Conversion Mode</label>
+          <select class="field" id="calc-mode" onchange="calcUpdate()">
+            <option value="lengthToWeight">Length → Weight</option>
+            <option value="weightToLength">Weight → Length</option>
+            <option value="densityToLength">Fish/lb → Length</option>
+          </select>
+        </div>
       </div>
-      <div style="display:flex;gap:6px">
-        <button onclick="exportCSV()" style="padding:6px 14px;border-radius:6px;border:1px solid var(--gray-300);background:var(--white);color:var(--gray-600);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">↓ Export CSV</button>
-        <button onclick="clearLog()" style="padding:6px 14px;border-radius:6px;border:1px solid var(--gray-300);background:var(--white);color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">✕ Clear</button>
+
+      <div class="grid grid-2" id="calc-custom-row" style="margin-bottom:20px; display:none">
+        <div>
+          <label class="field-label">Coefficient "c"</label>
+          <input class="field" type="number" step="any" id="calc-custom-c" value="0.0004055" oninput="calcUpdate()">
+        </div>
+        <div>
+          <label class="field-label">Exponent "n"</label>
+          <input class="field" type="number" step="any" id="calc-custom-n" value="3" oninput="calcUpdate()">
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div>
+          <label class="field-label" id="calc-input-label">Length (inches)</label>
+          <input class="field" type="number" step="any" id="calc-input" value="12" style="font-size:18px;padding:14px 16px" oninput="calcUpdate()">
+        </div>
+        <div id="calc-unit-wrap">
+          <label class="field-label">Units</label>
+          <select class="field" id="calc-units" onchange="calcUpdate()">
+            <option value="imperial">Imperial</option>
+            <option value="metric">Metric</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="params-bar" id="calc-params"></div>
+
+      <div class="grid grid-4 gap-12" id="calc-results-top" style="margin-bottom:12px"></div>
+      <div class="grid grid-3 gap-12" id="calc-results-bottom"></div>
+      <div style="margin-top:20px;text-align:right">
+        <button class="btn btn-secondary" onclick="exportCalcXLSX()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Results (.xlsx)
+        </button>
       </div>
     </div>
-    <div id="logBox">
-      <div class="empty"><div style="font-size:40px;margin-bottom:10px;opacity:0.3">📋</div><div style="font-weight:600">No records yet</div><div style="font-size:12px;margin-top:4px">Use the "Save to Log" buttons on any calculator.</div></div>
+
+    <!-- ════════════ TABLES PAGE ════════════ -->
+    <div class="page" id="page-tables">
+      <div class="page-title">Length-Weight Table Generator</div>
+      <p class="page-desc">Generate comprehensive conversion tables for stocking, sampling, and hatchery operations.</p>
+
+      <div class="card" style="margin-bottom:24px">
+        <div class="grid grid-3" style="margin-bottom:20px">
+          <div>
+            <label class="field-label">Species</label>
+            <select class="field" id="tbl-species" onchange="tblSpeciesChange()"></select>
+          </div>
+          <div>
+            <label class="field-label">Coefficient "c"</label>
+            <div id="tbl-c-display" class="field-static">0.0004055</div>
+            <input class="field" type="number" step="any" id="tbl-c-input" value="0.0004055" style="display:none">
+          </div>
+          <div>
+            <label class="field-label">Exponent "n"</label>
+            <div id="tbl-n-display" class="field-static">3</div>
+            <input class="field" type="number" step="any" id="tbl-n-input" value="3" style="display:none">
+          </div>
+        </div>
+        <div class="grid grid-3" style="margin-bottom:20px">
+          <div>
+            <label class="field-label">Starting Length (inches)</label>
+            <input class="field" type="number" step="any" id="tbl-start" value="1">
+          </div>
+          <div>
+            <label class="field-label">Ending Length (inches)</label>
+            <input class="field" type="number" step="any" id="tbl-end" value="12">
+          </div>
+          <div>
+            <label class="field-label">Interval (inches)</label>
+            <select class="field" id="tbl-interval">
+              <option value="0.01">0.01</option>
+              <option value="0.05">0.05</option>
+              <option value="0.1">0.10</option>
+              <option value="0.25">0.25</option>
+              <option value="0.5" selected>0.50</option>
+              <option value="1">1.00</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <button class="btn btn-primary" onclick="generateTable()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+            Generate Table
+          </button>
+          <button class="btn btn-secondary" id="tbl-export-btn" onclick="exportTableXLSX()" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Excel (.xlsx)
+          </button>
+          <button class="btn btn-secondary" id="tbl-export-csv-btn" onclick="exportCSV()" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      <div id="tbl-output"></div>
     </div>
-  </div>
-</div>
 
-<!-- ================================================================ -->
-<!--                      TERMS PAGE                                  -->
-<!-- ================================================================ -->
-<div class="page" id="p-terms">
-<div class="card terms">
-  <h2>Terms of Use</h2>
-  <p style="color:var(--gray-400);font-size:12px;margin-bottom:16px">Effective 2025 — Last Updated March 2026</p>
+    <!-- ════════════ THEORY PAGE ════════════ -->
+    <div class="page" id="page-theory">
+      <div class="page-title">Theory &amp; Education</div>
+      <p class="page-desc">Understanding the length-weight relationship in fisheries science.</p>
 
-  <h3>1. Purpose & Intended Use</h3>
-  <p>Flow Like a Pro is an <strong>educational tool</strong> for calculating flow rates, volumes, exchange times, and related hatchery measurements. It is intended for:</p>
-  <ul>
-    <li><strong>Students</strong> — in aquaculture, fisheries biology, environmental science, and related programs</li>
-    <li><strong>Educators</strong> — as a teaching aid and lab companion</li>
-    <li><strong>Industry professionals</strong> — hatchery workers, fish biologists, and aquaculture technicians for quick field reference</li>
-  </ul>
+      <!-- Section 1 -->
+      <div class="collapsible open" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          1. The Length-Weight Relationship
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">The length-weight relationship is one of the most fundamental tools in fisheries biology. It allows scientists, hatchery managers, and researchers to estimate the weight of a fish when only its length is known — or vice versa. This relationship is described by a power-law model:</p>
+          <div class="formula-box">W = c &times; L<sup>n</sup></div>
+          <div class="var-grid">
+            <span class="var-sym">W</span><span>= Weight of the fish (in pounds, when L is in inches)</span>
+            <span class="var-sym">L</span><span>= Total length of the fish (in inches)</span>
+            <span class="var-sym">c</span><span>= Species-specific coefficient (intercept on log scale)</span>
+            <span class="var-sym">n</span><span>= Species-specific exponent (slope on log scale, often &asymp; 3)</span>
+          </div>
+          <p class="theory-text" style="margin-top:16px">This equation derives from the principle that fish are three-dimensional organisms. If a fish grows proportionally in all directions (isometric growth), its weight should increase with the cube of its length — hence <strong>n &asymp; 3</strong>. The coefficient <strong>c</strong> accounts for the species-specific body shape and density.</p>
+        </div>
+      </div>
 
-  <h3>2. Disclaimer</h3>
-  <p>This tool is provided <strong>"AS IS"</strong> without warranties of any kind. While calculations use standard formulas, the developers make no guarantee results are error-free or suitable for critical operational decisions.</p>
+      <!-- Section 2 -->
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          2. Understanding the Parameters
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <h4 style="font-size:15px;color:var(--warm);margin-bottom:8px">The Coefficient "c"</h4>
+          <p class="theory-text">The coefficient <em>c</em> is a scaling factor that reflects the body form and condition of a fish. A higher <em>c</em> value means a heavier fish at any given length. For example, Largemouth Bass (c&nbsp;=&nbsp;0.0004055) are stockier than Northern Pike (c&nbsp;=&nbsp;0.0001811), which are long and slender. The value of <em>c</em> can vary between populations due to differences in diet, habitat, and genetics.</p>
+          <h4 style="font-size:15px;color:var(--warm);margin-bottom:8px">The Exponent "n"</h4>
+          <p class="theory-text">The exponent <em>n</em> describes how weight scales with length. When <strong>n&nbsp;=&nbsp;3</strong>, growth is <em>isometric</em> — the fish maintains the same proportions as it grows. When <strong>n&nbsp;&gt;&nbsp;3</strong>, fish become relatively heavier at larger sizes (<em>positive allometric</em> growth). When <strong>n&nbsp;&lt;&nbsp;3</strong>, fish become relatively lighter (<em>negative allometric</em> growth). In practice, <em>n</em> values for most species fall between 2.5 and 3.5.</p>
+          <div class="example-box">
+            <div style="font-size:13px;font-weight:700;margin-bottom:12px">Species Coefficient Comparison</div>
+            <div class="species-grid" id="theory-species-grid"></div>
+          </div>
+        </div>
+      </div>
 
-  <h3>3. Not Professional Engineering Advice</h3>
-  <p>This tool does <strong>not</strong> replace professional engineering. All results should be verified before use in system design or construction. Users are responsible for verifying inputs, applying appropriate safety factors, and consulting qualified professionals.</p>
+      <!-- Section 3 -->
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          3. Worked Examples
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <div class="example-box">
+            <div class="example-title" style="color:var(--warm)">Example 1: Weight from Length</div>
+            <p class="theory-text">What is the weight of an 8.95-inch Rainbow Trout?</p>
+            <div class="step-text">
+              Given: c = 0.0004055, n = 3, L = 8.95 in<br><br>
+              W = c &times; L<sup>n</sup><br>
+              W = 0.0004055 &times; (8.95)<sup>3</sup><br>
+              W = 0.0004055 &times; 717.4<br>
+              <span class="step-result">W &asymp; 0.291 lb (&asymp; 132 grams)</span>
+            </div>
+          </div>
+          <div class="example-box">
+            <div class="example-title" style="color:var(--warm)">Example 2: Length from Weight</div>
+            <p class="theory-text">What length is a 2-pound Walleye?</p>
+            <div class="step-text">
+              Given: c = 0.0003, n = 3, W = 2 lb<br><br>
+              L = (W / c)<sup>1/n</sup><br>
+              L = (2 / 0.0003)<sup>1/3</sup><br>
+              L = (6666.67)<sup>0.333</sup><br>
+              <span class="step-result">L &asymp; 18.82 inches (&asymp; 47.8 cm)</span>
+            </div>
+          </div>
+          <div class="example-box">
+            <div class="example-title" style="color:var(--warm)">Example 3: Stocking Density</div>
+            <p class="theory-text">A hatchery needs to stock 500 fish per pound of Chinook Salmon. What length should the fish be?</p>
+            <div class="step-text">
+              Given: c = 0.0002959, n = 3, Fish/lb = 500<br><br>
+              Weight per fish = 1/500 = 0.002 lb<br>
+              L = (0.002 / 0.0002959)<sup>1/3</sup><br>
+              L = (6.76)<sup>0.333</sup><br>
+              <span class="step-result">L &asymp; 1.89 inches (&asymp; 4.81 cm)</span>
+            </div>
+          </div>
+          <div class="example-box">
+            <div class="example-title" style="color:var(--warm)">Example 4: Condition Factor (K)</div>
+            <p class="theory-text">Calculate the condition factor for a Rainbow Trout that is 30 cm long and weighs 280 grams.</p>
+            <div class="step-text">
+              K = 100 &times; W / L<sup>n</sup><br>
+              K = 100 &times; 280 / (30)<sup>3</sup><br>
+              K = 28000 / 27000<br>
+              <span class="step-result">K &asymp; 1.037</span>
+            </div>
+            <p class="theory-text" style="margin-top:14px;margin-bottom:0">A K value near 1.0 indicates the fish is in average condition for its species. Values above 1.0 suggest above-average condition (plump fish), while values below 1.0 suggest below-average condition (thin fish). Condition factor is widely used to assess fish health in aquaculture and wildlife management.</p>
+          </div>
+        </div>
+      </div>
 
-  <h3>4. Limitation of Liability</h3>
-  <p>The developers shall not be liable for any damages arising from the use of this tool, including but not limited to equipment failure, financial losses, environmental damage, or loss of aquatic organisms.</p>
+      <!-- Section 4 -->
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          4. Applications in Research &amp; Industry
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text"><strong>Hatchery Management:</strong> Hatcheries use length-weight tables to estimate total biomass from sample counts and lengths. This allows managers to calculate feed rations, stocking densities, and transport loads without weighing every individual fish. The "fish per pound" metric is particularly important when filling stocking orders.</p>
+          <p class="theory-text"><strong>Population Assessment:</strong> Wildlife biologists use the condition factor (K) to monitor the health of wild fish populations. Declining K values across a population may indicate overpopulation, poor forage availability, or environmental stress. Temporal trends in K values can signal important ecological changes.</p>
+          <p class="theory-text"><strong>Growth Studies:</strong> By comparing observed weights to predicted weights from the length-weight equation, researchers can evaluate growth rates across different environments, management strategies, or genetic strains. Deviations from expected weight at length are biologically meaningful.</p>
+          <p class="theory-text"><strong>Unit Conversions:</strong> The calculator provides seamless conversion between imperial and metric systems, which is essential for international collaboration and for comparing data across different reporting standards.</p>
+        </div>
+      </div>
 
-  <h3>5. Data & Privacy</h3>
-  <p>This tool operates <strong>entirely in your browser</strong>. No data is sent to any server. All logged records are stored in session memory and lost when you close the page.</p>
+      <!-- Section 5 -->
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          5. Logarithmic Transformation &amp; Regression
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">The length-weight parameters (c and n) are typically estimated by fitting a linear regression to log-transformed data:</p>
+          <div class="formula-box">log(W) = log(c) + n &times; log(L)</div>
+          <p class="theory-text">This transforms the power curve into a straight line, where <strong>log(c)</strong> is the y-intercept and <strong>n</strong> is the slope. Researchers collect paired length-weight observations from field samples, log-transform both variables, and perform ordinary least-squares regression. The R&sup2; value indicates how well the model fits the observed data; values above 0.95 are common for length-weight regressions.</p>
+          <p class="theory-text">It is important to note that the values of <em>c</em> and <em>n</em> provided in this application are representative averages for each species. For highest accuracy, hatchery-specific or population-specific parameters should be derived from local data whenever possible.</p>
+        </div>
+      </div>
 
-  <h3>6. Academic Integrity</h3>
-  <p>Students should comply with their institution's academic integrity policies. This tool supplements learning — it does not replace understanding the formulas and principles.</p>
+      <!-- Section 6 -->
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          6. Limitations &amp; Best Practices
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text"><strong>Extrapolation risk:</strong> The equation is most accurate within the length range used to derive the parameters. Extrapolating to very small fry or exceptionally large adults may yield unreliable estimates.</p>
+          <p class="theory-text"><strong>Seasonal variation:</strong> Fish condition changes seasonally due to spawning, feeding cycles, and environmental conditions. A single set of c and n values may not capture this variation.</p>
+          <p class="theory-text"><strong>Population differences:</strong> Different populations of the same species may have distinct length-weight relationships due to genetic and environmental differences. Use local parameters when available.</p>
+          <p class="theory-text"><strong>Measurement consistency:</strong> Length measurements should be consistent (total length vs. fork length vs. standard length). Mixing measurement types will introduce systematic error.</p>
+        </div>
+      </div>
+    </div>
 
-  <h3>7. Crest Flow Chart Accuracy</h3>
-  <p>The crest height / GPM chart is a reference table for standard sump configurations. Actual flow may vary due to pipe condition, water temperature, and installation. Use site-specific calibration when possible.</p>
+    <!-- ════════════ CAMERA PAGE ════════════ -->
+    <div class="page" id="page-camera">
+      <div class="page-title">Catch Documentation</div>
+      <p class="page-desc">Photograph and record catch data for field research and documentation.</p>
 
-  <h3>8. Intellectual Property</h3>
-  <p>The underlying equations are public-domain science. The reference chart is sourced from standard hatchery training materials. The app design and implementation are proprietary.</p>
+      <!-- How to Use Guide -->
+      <div class="collapsible open" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          <span style="display:flex;align-items:center;gap:8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            How to Use — Camera &amp; Measurement Guide
+          </span>
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <!-- Left: Photo Steps -->
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--warm);margin-bottom:12px">📸 Capturing a Photo</div>
+              <div class="example-box" style="padding:16px">
+                <div style="display:flex;gap:12px;margin-bottom:14px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">1</div>
+                  <div style="font-size:13px;color:var(--text-muted);line-height:1.6"><strong style="color:var(--text)">Prepare your shot.</strong> Place the fish on a flat surface (measuring board, table, or ground). Place a reference object — a credit card, dollar bill, coin, or ruler — flat beside the fish at the same height.</div>
+                </div>
+                <div style="display:flex;gap:12px;margin-bottom:14px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">2</div>
+                  <div style="font-size:13px;color:var(--text-muted);line-height:1.6"><strong style="color:var(--text)">Take the photo.</strong> Hold your phone or camera <strong style="color:var(--text)">directly above</strong> the fish, pointing straight down. Keep the camera parallel to the surface to minimize perspective distortion. Tap "Open Camera" or "Upload Photo."</div>
+                </div>
+                <div style="display:flex;gap:12px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">3</div>
+                  <div style="font-size:13px;color:var(--text-muted);line-height:1.6"><strong style="color:var(--text)">Capture or upload.</strong> Use the shutter button to snap a photo, or upload an existing image from your device. The image will appear in the measurement workspace.</div>
+                </div>
+              </div>
+            </div>
+            <!-- Right: Measurement Steps -->
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px">📏 Measuring Fish Length</div>
+              <div class="example-box" style="padding:16px">
+                <div style="display:flex;gap:12px;margin-bottom:14px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:var(--warm-soft);color:var(--warm);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">1</div>
+                  <div style="font-size:13px;color:var(--text-muted);line-height:1.6"><strong style="color:var(--text)">Select your reference object.</strong> Choose from the presets (credit card, dollar bill, US quarter) or enter a custom length. The app uses this known size to calibrate the pixel-to-inch scale.</div>
+                </div>
+                <div style="display:flex;gap:12px;margin-bottom:14px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:var(--warm-soft);color:var(--warm);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">2</div>
+                  <div style="font-size:13px;color:var(--text-muted);line-height:1.6"><strong style="color:var(--text)">Calibrate — click two points</strong> on opposite ends of your reference object in the image. A <span style="color:var(--warm);font-weight:600">gold line</span> will appear showing the reference distance.</div>
+                </div>
+                <div style="display:flex;gap:12px;margin-bottom:14px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:var(--warm-soft);color:var(--warm);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">3</div>
+                  <div style="font-size:13px;color:var(--text-muted);line-height:1.6"><strong style="color:var(--text)">Measure — click the fish's nose</strong> (snout), then click the <strong style="color:var(--text)">tail tip</strong>. A <span style="color:var(--accent);font-weight:600">blue line</span> will appear with the calculated real-world length in inches.</div>
+                </div>
+                <div style="display:flex;gap:12px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:var(--warm-soft);color:var(--warm);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">4</div>
+                  <div style="font-size:13px;color:var(--text-muted);line-height:1.6"><strong style="color:var(--text)">Apply the measurement.</strong> Click "Apply to Length Field" to auto-fill the length. The app will compute estimated weight using the W&nbsp;=&nbsp;c&times;L<sup>n</sup> formula. Fill in other fields and save the record.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Accuracy tips -->
+          <div style="margin-top:16px;padding:14px 18px;background:var(--surface-alt);border-radius:8px;border:1px solid var(--border)">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">⚡ Tips for Best Accuracy</div>
+            <div style="font-size:13px;color:var(--text-muted);line-height:1.7">
+              <strong style="color:var(--text)">Camera angle:</strong> Shoot from directly above, perpendicular to the fish. Tilted angles cause foreshortening errors.<br>
+              <strong style="color:var(--text)">Same plane:</strong> The reference object and the fish must be at the same distance from the camera — both flat on the same surface.<br>
+              <strong style="color:var(--text)">Reference size:</strong> Larger reference objects (dollar bill or ruler) give better accuracy than small ones (coins).<br>
+              <strong style="color:var(--text)">Click precision:</strong> Zoom in on your device if needed. Precise clicks on endpoints matter more than image resolution.<br>
+              <strong style="color:var(--text)">Reset anytime:</strong> If a measurement looks off, use "Reset Measure" and try again — there is no limit on retries.
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <div style="margin-top:24px;padding:16px;background:var(--blue-light);border-radius:var(--radius-sm)">
-    <p style="font-weight:600;color:var(--blue-dark)">By using this tool, you acknowledge that you have read and agree to these Terms of Use.</p>
-  </div>
-</div>
-</div>
+      <canvas id="cam-canvas" style="display:none"></canvas>
+      <input type="file" accept="image/*" capture="environment" id="cam-file-input" style="display:none" onchange="handleFileUpload(event)">
 
-</div><!-- end container -->
+      <!-- Camera / capture area -->
+      <div id="cam-capture-area" class="card" style="margin-bottom:24px">
+        <!-- State: idle -->
+        <div id="cam-idle" class="camera-placeholder">
+          <div class="camera-icon-circle">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <div class="camera-title">Document Your Catch</div>
+          <p class="camera-desc">Take a photo using your camera or upload an existing image to create a field record.</p>
+          <div class="camera-error" id="cam-error"></div>
+          <div style="display:flex;gap:12px;justify-content:center">
+            <button class="btn btn-primary" onclick="startCamera()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Open Camera
+            </button>
+            <button class="btn btn-secondary" onclick="document.getElementById('cam-file-input').click()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Upload Photo
+            </button>
+          </div>
+        </div>
 
-<footer class="footer">
-  <div>Flow Like a Pro — Hatchery Measurements & Calculations</div>
-  <div style="margin-top:3px">Based on the Continuity Equation (Conservation of Mass) — For educational & industry use</div>
-</footer>
+        <!-- State: live camera -->
+        <div id="cam-live" style="display:none">
+          <video id="cam-video" autoplay playsinline muted></video>
+          <div style="display:flex;gap:12px;justify-content:center;margin-top:16px">
+            <button class="btn btn-primary" style="padding:14px 32px;font-size:16px" onclick="takePhoto()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Capture Photo
+            </button>
+            <button class="btn btn-secondary" onclick="stopCamera()">Cancel</button>
+          </div>
+        </div>
+
+        <!-- State: reviewing capture with measurement tool -->
+        <div id="cam-review" style="display:none">
+          <!-- Measurement steps indicator -->
+          <div class="measure-toolbar">
+            <div class="measure-badge measure-badge-ref" id="msr-badge-ref">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.7 7.3l-5-5a1 1 0 00-1.4 0l-13 13a1 1 0 000 1.4l5 5a1 1 0 001.4 0l13-13a1 1 0 000-1.4z"/></svg>
+              <span id="msr-ref-status">① Set Reference</span>
+            </div>
+            <div class="measure-badge measure-badge-fish" id="msr-badge-fish" style="opacity:0.4">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 12c3-6 11-6 14.5 0-3.5 6-11.5 6-14.5 0z"/><circle cx="16" cy="12" r="1" fill="currentColor"/></svg>
+              <span id="msr-fish-status">② Measure Fish</span>
+            </div>
+            <div style="flex:1"></div>
+            <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px" onclick="resetMeasure()">Reset Measure</button>
+          </div>
+
+          <div class="capture-form-grid">
+            <div>
+              <!-- Reference object selector -->
+              <div id="msr-ref-selector">
+                <label class="field-label">Reference Object (place next to fish)</label>
+                <div class="ref-select-grid">
+                  <div class="ref-option active" data-ref="credit_card" onclick="selectRef(this,'credit_card',3.375)">
+                    <span class="ref-option-icon">💳</span>Credit Card
+                    <div class="ref-option-size">3.375"</div>
+                  </div>
+                  <div class="ref-option" data-ref="dollar_bill" onclick="selectRef(this,'dollar_bill',6.14)">
+                    <span class="ref-option-icon">💵</span>Dollar Bill
+                    <div class="ref-option-size">6.14"</div>
+                  </div>
+                  <div class="ref-option" data-ref="quarter" onclick="selectRef(this,'quarter',0.955)">
+                    <span class="ref-option-icon">🪙</span>US Quarter
+                    <div class="ref-option-size">0.955"</div>
+                  </div>
+                  <div class="ref-option" data-ref="custom_ref" onclick="selectRef(this,'custom_ref',null)">
+                    <span class="ref-option-icon">📏</span>Custom
+                    <div class="ref-option-size">enter size</div>
+                  </div>
+                </div>
+                <div id="msr-custom-ref-row" style="display:none;margin-bottom:12px">
+                  <label class="field-label">Custom Reference Length (inches)</label>
+                  <input class="field" type="number" step="any" id="msr-custom-ref-val" placeholder="e.g. 12" oninput="updateCustomRef()">
+                </div>
+              </div>
+
+              <!-- Step instructions -->
+              <div class="measure-steps measure-step-active" id="msr-instruction">
+                <strong>Step 1:</strong> Click two endpoints on your reference object in the photo below. Keep the reference flat and at the same distance from the camera as the fish.
+              </div>
+
+              <!-- Interactive image with measurement overlay -->
+              <div class="measure-container" id="msr-container" onclick="handleMeasureClick(event)">
+                <img id="cam-preview-img" class="capture-preview" src="" alt="Capture" style="border-radius:8px">
+                <canvas id="msr-canvas" class="measure-canvas"></canvas>
+              </div>
+
+              <!-- Measurement result -->
+              <div id="msr-result" style="display:none">
+                <div class="measure-result-box">
+                  <div class="measure-result-label">MEASURED FISH LENGTH</div>
+                  <div class="measure-result-value" id="msr-result-inches">—</div>
+                  <div class="measure-result-label" id="msr-result-cm" style="margin-top:2px"></div>
+                </div>
+                <div style="text-align:center;margin-top:8px">
+                  <button class="btn btn-primary" style="font-size:13px;padding:8px 18px" onclick="applyMeasurement()">
+                    Apply to Length Field ↓
+                  </button>
+                </div>
+              </div>
+
+              <div style="margin-top:10px;font-size:11px;color:var(--text-dim);line-height:1.6">
+                <strong>Tip:</strong> For best accuracy, photograph the fish flat on a measuring board or beside a ruler. Keep the camera directly above, perpendicular to the fish, minimizing angle distortion.
+              </div>
+            </div>
+
+            <div>
+              <div class="form-title">Record Details</div>
+              <div class="form-group">
+                <label class="field-label">Species</label>
+                <select class="field" id="cam-species"></select>
+              </div>
+              <div class="form-row-2 form-group">
+                <div>
+                  <label class="field-label">Length (inches)</label>
+                  <input class="field" type="number" step="any" id="cam-length" placeholder="Measure or enter">
+                </div>
+                <div>
+                  <label class="field-label">Actual Weight (lb, opt.)</label>
+                  <input class="field" type="number" step="any" id="cam-weight" placeholder="e.g. 1.2">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="field-label">Location</label>
+                <input class="field" type="text" id="cam-location" placeholder="e.g. Silver Creek, ID">
+              </div>
+              <div class="form-group">
+                <label class="field-label">Notes</label>
+                <textarea class="field" id="cam-notes" placeholder="Water temp, conditions, gear..."></textarea>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-primary" onclick="saveCapture()">Save Record</button>
+                <button class="btn btn-secondary" onclick="discardCapture()">Discard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Records list -->
+      <div id="cam-records"></div>
+      <div id="cam-export-wrap" style="display:none;margin-top:16px;text-align:right">
+        <button class="btn btn-secondary" onclick="exportRecordsXLSX()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export All Records (.xlsx)
+        </button>
+      </div>
+    </div>
+
+    <!-- ════════════ TERMS PAGE ════════════ -->
+    <div class="page" id="page-terms">
+      <div class="page-title">Terms of Use</div>
+      <p class="page-desc">Please review the following terms and conditions before using this application.</p>
+
+      <div class="collapsible open" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          1. Acceptance of Terms
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">By accessing and using the Length Weight Calculator 1.0 application ("the App"), you acknowledge that you have read, understood, and agree to be bound by these Terms of Use. If you do not agree to these terms, you must discontinue use of the App immediately. These terms apply to all users, including students, researchers, educators, hatchery personnel, and any other individuals accessing the App for any purpose.</p>
+        </div>
+      </div>
+
+      <div class="collapsible open" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          2. Intended Use &amp; Purpose
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">The App is designed for <strong>educational, academic, and industry research purposes</strong> in the field of fisheries biology and aquaculture. Its primary functions include computing length-weight relationships using the standard power-law model (W&nbsp;=&nbsp;c&times;L<sup>n</sup>), generating conversion tables, providing educational content on fisheries science principles, and documenting catch data through photographic records and reference-based measurement.</p>
+          <p class="theory-text">The App is intended to serve as a supplementary tool for college coursework, field research, hatchery operations, and wildlife management. It is not intended to replace professional-grade scientific instruments, certified measurement devices, or expert judgment.</p>
+        </div>
+      </div>
+
+      <div class="collapsible open" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          3. Data Accuracy &amp; Limitations
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">The species-specific coefficient ("c") and exponent ("n") values provided in this App are <strong>representative averages</strong> compiled from published fisheries literature. These values are thought to be representative, but actual length-weight relationships can vary significantly between populations, geographic regions, seasons, and environmental conditions. Users should apply hatchery-specific or population-specific parameters whenever local data is available.</p>
+          <p class="theory-text">The camera-based measurement feature uses reference-object calibration (photogrammetric estimation) and is subject to error from camera angle, lens distortion, reference object placement, parallax, and user click precision. Measurements obtained through this tool are <strong>estimates only</strong> and should not be treated as certified or legally binding measurements. For regulatory, compliance, or high-precision scientific work, always use calibrated physical instruments (e.g., measuring boards, certified scales).</p>
+          <p class="theory-text">All calculations, conversions, and outputs are provided on an <strong>"as-is" basis</strong>. While every effort has been made to ensure mathematical accuracy, the developers do not warrant that the App is free of errors, bugs, or computational inaccuracies.</p>
+        </div>
+      </div>
+
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          4. No Warranty
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, OR NON-INFRINGEMENT. The developers make no guarantee that the App will meet your specific requirements, operate without interruption, or produce results suitable for any particular application.</p>
+        </div>
+      </div>
+
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          5. Limitation of Liability
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">In no event shall the developers, authors, contributors, or affiliated institutions be liable for any direct, indirect, incidental, special, consequential, or exemplary damages arising out of or in connection with the use of this App. This includes, but is not limited to, damages resulting from: incorrect measurements or weight estimates; decisions made based on App outputs in hatchery, stocking, or management operations; loss of data, records, or catch documentation; or any financial losses resulting from reliance on the App's calculations.</p>
+          <p class="theory-text">Users assume full responsibility for verifying any critical measurements, calculations, or data before using them in professional, regulatory, or commercial settings.</p>
+        </div>
+      </div>
+
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          6. User Data &amp; Privacy
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">The App operates entirely within your web browser. <strong>No data is transmitted to external servers.</strong> All photographs, catch records, measurement data, and calculated results remain on your local device and are stored only in your browser's active session memory. When you close the browser tab or navigate away, all unsaved session data is lost. Data exported to Excel (.xlsx) or CSV files is saved only to your local device.</p>
+          <p class="theory-text">Camera access is requested solely for the purpose of capturing photographs for catch documentation. No images are uploaded, stored remotely, or shared with any third party. Camera permissions can be revoked at any time through your browser or device settings.</p>
+        </div>
+      </div>
+
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          7. Intellectual Property
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">The length-weight equation (W&nbsp;=&nbsp;c&times;L<sup>n</sup>) and the species parameter values used in this App are derived from publicly available fisheries science literature and are not proprietary. The App's interface design, code, educational content, and measurement tool implementation are the intellectual property of the developer(s). Users may freely use the App and its exported data for educational and research purposes. Redistribution, modification, or commercial use of the App itself requires written permission from the developer(s).</p>
+        </div>
+      </div>
+
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          8. Regulatory &amp; Compliance Notice
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">This App is not a substitute for compliance with federal, state, tribal, or local fish and wildlife regulations. Users are responsible for ensuring that all fishing, sampling, and data collection activities comply with applicable laws, permits, and institutional review requirements. Catch records generated by this App do not constitute official documentation for regulatory reporting unless accepted by the relevant governing authority.</p>
+        </div>
+      </div>
+
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          9. Modifications to Terms
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">These Terms of Use may be updated from time to time. Continued use of the App following any changes constitutes acceptance of the revised terms. Users are encouraged to review these terms periodically. The current version of these terms is effective as of the date shown below.</p>
+        </div>
+      </div>
+
+      <div class="collapsible" onclick="toggleCollapsible(event)">
+        <button class="collapsible-header">
+          10. Contact &amp; Feedback
+          <span class="collapsible-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </button>
+        <div class="collapsible-body">
+          <p class="theory-text">For questions, corrections, bug reports, or suggestions regarding this application, please contact the developer(s) through the appropriate institutional or project channels. Contributions of species-specific length-weight parameters from local populations are welcomed and help improve the accuracy of this tool for all users.</p>
+        </div>
+      </div>
+
+      <!-- Effective date & version -->
+      <div style="margin-top:24px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Application Version</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text)">Length Weight Calculator 1.0</div>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Terms Effective Date</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text)" id="terms-date"></div>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Purpose</div>
+          <div style="font-size:14px;font-weight:600;color:var(--accent)">Educational &amp; Research Use</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /app-body -->
 
 <script>
-// ═════════════════════════════════
-//          CREST CHART DATA
-// ═════════════════════════════════
-const CREST_DATA = [
-  {crest:"½",    val:0.5,   d12:42,  d10:35,  d8:28,  d6:21},
-  {crest:"¾",    val:0.75,  d12:70,  d10:59,  d8:47,  d6:35},
-  {crest:"1",    val:1,     d12:113, d10:94,  d8:75,  d6:57},
-  {crest:"1⅛",   val:1.125, d12:141, d10:118, d8:94,  d6:70},
-  {crest:"1¼",   val:1.25,  d12:155, d10:129, d8:103, d6:78},
-  {crest:"1⅜",   val:1.375, d12:183, d10:153, d8:122, d6:92},
-  {crest:"1½",   val:1.5,   d12:211, d10:176, d8:141, d6:106},
-  {crest:"1⅝",   val:1.625, d12:240, d10:200, d8:160, d6:120},
-  {crest:"1¾",   val:1.75,  d12:268, d10:224, d8:179, d6:134},
-  {crest:"1⅞",   val:1.875, d12:296, d10:247, d8:197, d6:148},
-  {crest:"2",    val:2,     d12:324, d10:271, d8:216, d6:162},
-  {crest:"2⅛",   val:2.125, d12:352, d10:294, d8:235, d6:176},
-  {crest:"2¼",   val:2.25,  d12:381, d10:317, d8:254, d6:190},
-  {crest:"2⅜",   val:2.375, d12:423, d10:353, d8:282, d6:211},
-  {crest:"2½",   val:2.5,   d12:451, d10:376, d8:301, d6:225},
-  {crest:"2⅝",   val:2.625, d12:479, d10:400, d8:320, d6:240},
-  {crest:"2¾",   val:2.75,  d12:522, d10:435, d8:349, d6:261},
-  {crest:"2⅞",   val:2.875, d12:564, d10:470, d8:376, d6:282},
-  {crest:"3",    val:3,     d12:592, d10:494, d8:394, d6:296},
+/* ═══════════ SPECIES DATABASE ═══════════ */
+const SPECIES = [
+  { name: "Muskellunge", c: 0.00016, n: 3 },
+  { name: "Tiger Muskellunge", c: 0.00016, n: 3 },
+  { name: "Northern Pike", c: 0.0001811, n: 3 },
+  { name: "Lake Trout", c: 0.0002723, n: 3 },
+  { name: "Chinook Salmon", c: 0.0002959, n: 3 },
+  { name: "Channel Catfish", c: 0.0002877, n: 3 },
+  { name: "Walleye", c: 0.0003, n: 3 },
+  { name: "Steelhead Trout", c: 0.0003405, n: 3 },
+  { name: "Westslope Cutthroat Trout", c: 0.0003559, n: 3 },
+  { name: "Coho Salmon", c: 0.0003737, n: 3 },
+  { name: "Rainbow Trout", c: 0.0004055, n: 3 },
+  { name: "Brown Trout", c: 0.0004055, n: 3 },
+  { name: "Largemouth Bass", c: 0.0004055, n: 3 },
 ];
 
-// Build table
-const tbody = document.getElementById('crestBody');
-CREST_DATA.forEach(r => {
-  const tr = document.createElement('tr');
-  tr.dataset.val = r.val;
-  tr.innerHTML = `<td>${r.crest}"</td><td>${r.d12}</td><td>${r.d10}</td><td>${r.d8}</td><td>${r.d6}</td>`;
-  tbody.appendChild(tr);
-});
+/* ═══════════ MATH HELPERS ═══════════ */
+const calcW  = (c,n,L) => c * Math.pow(L,n);
+const lbToG  = lb => lb * 453.59237;
+const gToLb  = g => g / 453.59237;
+const inToCm = i => i * 2.54;
+const cmToIn = cm => cm / 2.54;
+const calcL  = (c,n,W) => Math.pow(W/c, 1/n);
+const calcK  = (wg,lcm,n) => 100 * wg / Math.pow(lcm,n);
 
-function lookupCrest() {
-  const diam = document.getElementById('crest-diam').value;
-  const height = parseFloat(document.getElementById('crest-height').value);
-  // clear highlights
-  tbody.querySelectorAll('tr').forEach(tr => tr.classList.remove('highlight'));
-  if (!diam || !height) { document.getElementById('crest-result-area').style.display='none'; return; }
-  const row = CREST_DATA.find(r => r.val === height);
-  if (!row) { document.getElementById('crest-result-area').style.display='none'; return; }
-  const key = 'd' + diam;
-  const gpm = row[key];
-  document.getElementById('crest-gpm').textContent = gpm;
-  document.getElementById('crest-result-area').style.display = 'grid';
-  // highlight row
-  const tr = tbody.querySelector(`tr[data-val="${height}"]`);
-  if (tr) tr.classList.add('highlight');
+/* ═══════════ NAVIGATION ═══════════ */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.nav-btn[data-page="${id}"]`).classList.add('active');
 }
 
-// ═════════════════════════════════
-//       EXCHANGE TIME CALC
-// ═════════════════════════════════
-function calcExchange() {
-  const V = parseFloat(document.getElementById('ex-vol').value) || 0;
-  const Q = parseFloat(document.getElementById('ex-flow').value) || 0;
-  const min = Q > 0 ? V / Q : 0;
-  const hr = min / 60;
-  const perhr = min > 0 ? 60 / min : 0;
-  document.getElementById('ex-min').textContent = fmt(min, 1);
-  document.getElementById('ex-hr').textContent = fmt(hr, 2);
-  document.getElementById('ex-perhr').textContent = fmt(perhr, 2);
-}
-
-// ═════════════════════════════════
-//        VOLUME CALCULATOR
-// ═════════════════════════════════
-let curShape = 'rect';
-function setShape(s, el) {
-  curShape = s;
-  document.querySelectorAll('#shapePills .pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  ['rect','cyl','cone','conepond'].forEach(id => {
-    document.getElementById('shape-'+id).style.display = id === s ? 'block' : 'none';
+/* ═══════════ POPULATE SPECIES SELECTS ═══════════ */
+function populateSpeciesSelect(el, includeCustom) {
+  SPECIES.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.name; o.textContent = s.name;
+    if (s.name === 'Rainbow Trout') o.selected = true;
+    el.appendChild(o);
   });
-  calcVol();
-}
-
-function calcVol() {
-  let vol = 0;
-  if (curShape === 'rect') {
-    const l=pf('r-l'), w=pf('r-w'), h=pf('r-h');
-    vol = l * w * h;
-  } else if (curShape === 'cyl') {
-    const d=pf('c-d'), h=pf('c-h'), r=d/2;
-    vol = Math.PI * r * r * h;
-  } else if (curShape === 'cone') {
-    const d=pf('co-d'), h=pf('co-h'), r=d/2;
-    vol = (1/3) * Math.PI * r * r * h;
-  } else if (curShape === 'conepond') {
-    const d=pf('cp-d'), h1=pf('cp-h1'), h2=pf('cp-h2'), r=d/2;
-    const h3 = Math.max(0, h1 - h2);
-    const cylVol = Math.PI * r * r * h2;
-    const coneVol = (1/3) * Math.PI * r * r * h3;
-    vol = cylVol + coneVol;
+  if (includeCustom) {
+    const o = document.createElement('option');
+    o.value = 'custom'; o.textContent = 'Custom Species...';
+    el.appendChild(o);
   }
-  const gal = vol * 7.48052;
-  const lit = gal * 3.78541;
-  document.getElementById('vol-ft3').textContent = fmt(vol, 2);
-  document.getElementById('vol-gal').textContent = fmt(gal, 1);
-  document.getElementById('vol-L').textContent = fmt(lit, 1);
 }
 
-// ═════════════════════════════════
-//       SURFACE AREA CALC
-// ═════════════════════════════════
-let curArea = 'arect';
-function setArea(a, el) {
-  curArea = a;
-  document.querySelectorAll('#areaPills .pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('area-arect').style.display = a === 'arect' ? 'block' : 'none';
-  document.getElementById('area-acirc').style.display = a === 'acirc' ? 'block' : 'none';
-  calcArea();
-}
+/* ═══════════ CALCULATOR ═══════════ */
+function calcUpdate() {
+  const speciesName = document.getElementById('calc-species').value;
+  const mode = document.getElementById('calc-mode').value;
+  const unitSys = document.getElementById('calc-units').value;
+  const val = parseFloat(document.getElementById('calc-input').value) || 0;
 
-function calcArea() {
-  let area = 0;
-  if (curArea === 'arect') {
-    area = pf('a-l') * pf('a-w');
+  // custom row
+  const isCustom = speciesName === 'custom';
+  document.getElementById('calc-custom-row').style.display = isCustom ? 'grid' : 'none';
+
+  // unit wrap visibility
+  document.getElementById('calc-unit-wrap').style.display = mode === 'densityToLength' ? 'none' : 'block';
+
+  // input label
+  const labels = {
+    lengthToWeight: unitSys === 'imperial' ? 'Length (inches)' : 'Length (cm)',
+    weightToLength: unitSys === 'imperial' ? 'Weight (pounds)' : 'Weight (grams)',
+    densityToLength: 'Fish per Pound',
+  };
+  document.getElementById('calc-input-label').textContent = labels[mode];
+
+  // get c, n
+  const sp = SPECIES.find(s => s.name === speciesName);
+  const c = isCustom ? (parseFloat(document.getElementById('calc-custom-c').value) || 0) : (sp?.c || 0);
+  const n = isCustom ? (parseFloat(document.getElementById('calc-custom-n').value) || 3) : (sp?.n || 3);
+
+  // compute
+  let wLb, lenIn;
+  if (mode === 'lengthToWeight') {
+    lenIn = unitSys === 'imperial' ? val : cmToIn(val);
+    wLb = calcW(c, n, lenIn);
+  } else if (mode === 'weightToLength') {
+    wLb = unitSys === 'imperial' ? val : gToLb(val);
+    lenIn = calcL(c, n, wLb);
   } else {
-    const r = pf('a-d') / 2;
-    area = Math.PI * r * r;
+    wLb = 1 / val;
+    lenIn = calcL(c, n, wLb);
   }
-  document.getElementById('sa-ft2').textContent = fmt(area, 2);
+  const wG = lbToG(wLb);
+  const lenCm = inToCm(lenIn);
+  const fpl = 1 / wLb;
+  const fpkg = 1 / (wG / 1000);
+  const K = calcK(wG, lenCm, n);
+
+  // params bar
+  document.getElementById('calc-params').innerHTML =
+    `<span>Species: <span class="hl">${isCustom ? 'Custom' : speciesName}</span></span>
+     <span>c = <span class="mono">${c}</span></span>
+     <span>n = <span class="mono">${n}</span></span>`;
+
+  // result cards
+  function rc(label, value, unit, color) {
+    return `<div class="result-card" style="border-color:${color}18">
+      <div class="result-card-label">${label}</div>
+      <div class="result-card-value" style="color:${color}">${value}</div>
+      <div class="result-card-unit">${unit}</div>
+    </div>`;
+  }
+  document.getElementById('calc-results-top').innerHTML =
+    rc('Weight', isFinite(wLb) ? wLb.toFixed(4) : '—', 'pounds', 'var(--accent)') +
+    rc('Weight', isFinite(wG) ? wG.toFixed(2) : '—', 'grams', 'var(--accent)') +
+    rc('Length', isFinite(lenIn) ? lenIn.toFixed(2) : '—', 'inches', 'var(--warm)') +
+    rc('Length', isFinite(lenCm) ? lenCm.toFixed(2) : '—', 'cm', 'var(--warm)');
+
+  document.getElementById('calc-results-bottom').innerHTML =
+    rc('Fish / Pound', isFinite(fpl) ? fpl.toFixed(2) : '—', 'count', 'var(--green)') +
+    rc('Fish / Kilogram', isFinite(fpkg) ? fpkg.toFixed(2) : '—', 'count', 'var(--green)') +
+    rc('Condition Factor (K)', isFinite(K) ? K.toFixed(4) : '—', 'metric', 'var(--violet)');
 }
 
-// ═════════════════════════════════
-//        UNIT CONVERTER
-// ═════════════════════════════════
-function convFt3() { const v=pf('uc-ft3'); si('uc-gal',v*7.48052); si('uc-L',v*28.3168); si('uc-m3',v*0.0283168); }
-function convGal() { const v=pf('uc-gal'); si('uc-ft3',v/7.48052); si('uc-L',v*3.78541); si('uc-m3',v*0.00378541); }
-function convL()   { const v=pf('uc-L');   si('uc-ft3',v/28.3168); si('uc-gal',v/3.78541); si('uc-m3',v/1000); }
-function convM3()  { const v=pf('uc-m3');  si('uc-ft3',v*35.3147); si('uc-gal',v*264.172); si('uc-L',v*1000); }
-function si(id,v){document.getElementById(id).value=v?v.toFixed(4):''}
+/* ═══════════ TABLES ═══════════ */
+let tableRows = [];
 
-// ═════════════════════════════════
-//            DATA LOG
-// ═════════════════════════════════
-let logs = [];
-function addLog(entry) {
-  entry.timestamp = new Date().toLocaleString();
-  logs.unshift(entry);
-  renderLog();
-  document.querySelector('[data-p="log"]').click();
-}
-function renderLog() {
-  const b = document.getElementById('badge');
-  b.textContent = logs.length; b.style.display = logs.length ? 'inline' : 'none';
-  document.getElementById('logCount').textContent = logs.length + ' record' + (logs.length!==1?'s':'') + ' saved';
-  const box = document.getElementById('logBox');
-  if (!logs.length) { box.innerHTML = '<div class="empty"><div style="font-size:40px;margin-bottom:10px;opacity:0.3">📋</div><div style="font-weight:600">No records yet</div></div>'; return; }
-  box.innerHTML = logs.map(l => {
-    const pairs = Object.entries(l).filter(([k])=>k!=='type'&&k!=='timestamp');
-    return `<div class="log-entry"><div class="log-head"><span class="log-type">${l.type}</span><span class="log-time">${l.timestamp}</span></div><div class="log-chips">${pairs.map(([k,v])=>`<span class="log-chip"><span class="k">${k.replace(/_/g,' ')}:</span><span class="v">${v}</span></span>`).join('')}</div></div>`;
-  }).join('');
-}
-function clearLog(){if(logs.length&&confirm('Clear all records?')){logs=[];renderLog()}}
-function exportCSV(){
-  if(!logs.length)return;
-  const keys=new Set();logs.forEach(e=>Object.keys(e).forEach(k=>keys.add(k)));
-  const k=Array.from(keys);let csv=k.join(',')+'\n';
-  logs.forEach(e=>{csv+=k.map(x=>'"'+(e[x]||'')+'"').join(',')+'\n'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='hatchery-log-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+function tblSpeciesChange() {
+  const name = document.getElementById('tbl-species').value;
+  const isCustom = name === 'custom';
+  document.getElementById('tbl-c-display').style.display = isCustom ? 'none' : 'block';
+  document.getElementById('tbl-n-display').style.display = isCustom ? 'none' : 'block';
+  document.getElementById('tbl-c-input').style.display = isCustom ? 'block' : 'none';
+  document.getElementById('tbl-n-input').style.display = isCustom ? 'block' : 'none';
+  if (!isCustom) {
+    const sp = SPECIES.find(s => s.name === name);
+    document.getElementById('tbl-c-display').textContent = sp.c;
+    document.getElementById('tbl-n-display').textContent = sp.n;
+  }
 }
 
-function logCrest(){
-  const d=document.getElementById('crest-diam').value,g=document.getElementById('crest-gpm').textContent;
-  if(!d||g==='—')return;
-  addLog({type:'Crest→Flow',sump_diameter:d+'"',crest_height:document.getElementById('crest-height').value+'"',flow_GPM:g});
-}
-function logExchange(){
-  const m=document.getElementById('ex-min').textContent;if(m==='—')return;
-  addLog({type:'Exchange Time',volume_gal:document.getElementById('ex-vol').value,flow_GPM:document.getElementById('ex-flow').value,exchange_min:m,exchanges_per_hr:document.getElementById('ex-perhr').textContent});
-}
-function logVol(){
-  const v=document.getElementById('vol-gal').textContent;if(v==='—')return;
-  addLog({type:'Volume ('+curShape+')',volume_ft3:document.getElementById('vol-ft3').textContent,volume_gal:v,volume_L:document.getElementById('vol-L').textContent});
-}
+function generateTable() {
+  const name = document.getElementById('tbl-species').value;
+  const isCustom = name === 'custom';
+  const sp = SPECIES.find(s => s.name === name);
+  const c = isCustom ? parseFloat(document.getElementById('tbl-c-input').value) : sp.c;
+  const n = isCustom ? parseFloat(document.getElementById('tbl-n-input').value) : sp.n;
+  const start = parseFloat(document.getElementById('tbl-start').value) || 1;
+  const end = parseFloat(document.getElementById('tbl-end').value) || 12;
+  const interval = parseFloat(document.getElementById('tbl-interval').value) || 0.5;
 
-// ═════════════════════════════════
-//           NAVIGATION
-// ═════════════════════════════════
-document.querySelectorAll('.nav button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.style.display='none'});
-    const t=document.getElementById('p-'+btn.dataset.p);
-    t.style.display='block';
-    requestAnimationFrame(()=>t.classList.add('active'));
-    window.scrollTo(0,0);
+  tableRows = [];
+  for (let L = start; L <= end + 0.0001; L += interval) {
+    const wLb = calcW(c, n, L);
+    const wG = lbToG(wLb);
+    tableRows.push({
+      li: L, lc: inToCm(L), wl: wLb, wg: wG,
+      fpl: 1/wLb, w1k: wLb*1000, fpk: 1/(wG/1000)
+    });
+  }
+
+  let html = `<div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:14px;font-weight:600">${isCustom ? 'Custom Species' : name} — ${tableRows.length} rows</div>
+      <div style="font-size:12px;color:var(--text-dim)">W = ${c} &times; L<sup>${n}</sup></div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table"><thead><tr>
+        <th>Length (in)</th><th>Length (cm)</th><th>Weight (lb)</th><th>Weight (g)</th><th>Fish/lb</th><th>Wt/1000 (lb)</th><th>Fish/kg</th>
+      </tr></thead><tbody>`;
+
+  tableRows.forEach(r => {
+    html += `<tr>
+      <td class="td-length">${r.li.toFixed(2)}</td>
+      <td>${r.lc.toFixed(2)}</td>
+      <td class="td-weight">${r.wl.toFixed(4)}</td>
+      <td>${r.wg.toFixed(2)}</td>
+      <td class="td-density">${r.fpl.toFixed(1)}</td>
+      <td>${r.w1k.toFixed(2)}</td>
+      <td>${r.fpk.toFixed(1)}</td>
+    </tr>`;
   });
+
+  html += '</tbody></table></div></div>';
+  document.getElementById('tbl-output').innerHTML = html;
+  document.getElementById('tbl-export-btn').style.display = 'inline-flex';
+  document.getElementById('tbl-export-csv-btn').style.display = 'inline-flex';
+}
+
+function exportCSV() {
+  const name = document.getElementById('tbl-species').value;
+  let csv = 'Length (in),Length (cm),Weight (lb),Weight (g),Fish/lb,Wt/1000 fish (lb),Fish/kg\n';
+  tableRows.forEach(r => {
+    csv += `${r.li.toFixed(2)},${r.lc.toFixed(2)},${r.wl.toFixed(4)},${r.wg.toFixed(2)},${r.fpl.toFixed(2)},${r.w1k.toFixed(2)},${r.fpk.toFixed(2)}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = `${(name === 'custom' ? 'custom' : name).replace(/\s/g,'_')}_length_weight_table.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+/* ═══════════ COLLAPSIBLES ═══════════ */
+function toggleCollapsible(event) {
+  const col = event.currentTarget;
+  if (event.target.closest('.collapsible-body')) return;
+  col.classList.toggle('open');
+}
+
+/* ═══════════ THEORY SPECIES GRID ═══════════ */
+function buildTheoryGrid() {
+  const el = document.getElementById('theory-species-grid');
+  el.innerHTML = SPECIES.map(s =>
+    `<div class="species-row"><span class="species-row-name">${s.name}</span><span class="species-row-val">${s.c}</span></div>`
+  ).join('');
+}
+
+/* ═══════════ CAMERA & MEASUREMENT ═══════════ */
+let cameraStream = null;
+let activeCapture = null;
+let captures = [];
+
+/* ── Measurement state ── */
+let msrState = 'ref'; // 'ref' | 'fish' | 'done'
+let refPoints = [];    // [{x,y}, {x,y}] in image-relative coords (0-1)
+let fishPoints = [];
+let refLengthInches = 3.375; // default: credit card
+let pixelsPerInch = null;
+let measuredFishLength = null;
+
+function showCamState(state) {
+  document.getElementById('cam-idle').style.display = state === 'idle' ? 'block' : 'none';
+  document.getElementById('cam-live').style.display = state === 'live' ? 'block' : 'none';
+  document.getElementById('cam-review').style.display = state === 'review' ? 'block' : 'none';
+}
+
+async function startCamera() {
+  try {
+    document.getElementById('cam-error').style.display = 'none';
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    document.getElementById('cam-video').srcObject = cameraStream;
+    showCamState('live');
+  } catch (e) {
+    const errEl = document.getElementById('cam-error');
+    errEl.textContent = 'Camera access denied or unavailable. You can upload a photo instead.';
+    errEl.style.display = 'block';
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  showCamState('idle');
+}
+
+function takePhoto() {
+  const video = document.getElementById('cam-video');
+  const canvas = document.getElementById('cam-canvas');
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  activeCapture = canvas.toDataURL('image/jpeg', 0.85);
+  stopCameraStream();
+  showReview();
+}
+
+function stopCameraStream() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+}
+
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { activeCapture = e.target.result; showReview(); };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function showReview() {
+  const img = document.getElementById('cam-preview-img');
+  img.src = activeCapture;
+  document.getElementById('cam-length').value = '';
+  document.getElementById('cam-weight').value = '';
+  document.getElementById('cam-location').value = '';
+  document.getElementById('cam-notes').value = '';
+  document.getElementById('cam-species').value = 'Rainbow Trout';
+  resetMeasure();
+  showCamState('review');
+  // Wait for image to load, then size the canvas
+  img.onload = () => initMeasureCanvas();
+}
+
+function discardCapture() {
+  activeCapture = null;
+  resetMeasure();
+  showCamState('idle');
+}
+
+function saveCapture() {
+  if (!activeCapture) return;
+  const speciesName = document.getElementById('cam-species').value;
+  const sp = SPECIES.find(s => s.name === speciesName);
+  const c = sp?.c || 0.0004055;
+  const n = sp?.n || 3;
+  const len = parseFloat(document.getElementById('cam-length').value) || 0;
+  const mw = parseFloat(document.getElementById('cam-weight').value) || null;
+  const ew = len > 0 ? calcW(c, n, len) : null;
+
+  captures.unshift({
+    id: Date.now(), image: activeCapture,
+    species: speciesName, length: len || null,
+    measuredWeight: mw, estimatedWeight: ew,
+    notes: document.getElementById('cam-notes').value,
+    location: document.getElementById('cam-location').value,
+    timestamp: new Date().toLocaleString(),
+  });
+  activeCapture = null;
+  resetMeasure();
+  showCamState('idle');
+  renderRecords();
+}
+
+function deleteRecord(id) {
+  captures = captures.filter(c => c.id !== id);
+  renderRecords();
+}
+
+function renderRecords() {
+  const el = document.getElementById('cam-records');
+  const expWrap = document.getElementById('cam-export-wrap');
+  if (captures.length === 0) { el.innerHTML = ''; expWrap.style.display = 'none'; return; }
+  expWrap.style.display = 'block';
+  let html = `<div class="record-header">Field Records (${captures.length})</div>`;
+  captures.forEach(c => {
+    let meta = '';
+    if (c.length) meta += `Length: ${c.length}" &middot; `;
+    if (c.estimatedWeight) meta += `Est: ${c.estimatedWeight.toFixed(3)} lb &middot; `;
+    if (c.measuredWeight) meta += `Actual: ${c.measuredWeight} lb &middot; `;
+    if (c.location) meta += `${c.location} &middot; `;
+    meta += c.timestamp;
+    html += `<div class="record-card">
+      <img class="record-thumb" src="${c.image}" alt="${c.species}">
+      <div>
+        <div class="record-species">${c.species}</div>
+        <div class="record-meta">${meta}</div>
+        ${c.notes ? `<div class="record-notes">${c.notes}</div>` : ''}
+      </div>
+      <button class="btn btn-danger" onclick="deleteRecord(${c.id})" title="Delete record">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+      </button>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+/* ── Measurement Tool Logic ── */
+function initMeasureCanvas() {
+  const container = document.getElementById('msr-container');
+  const img = document.getElementById('cam-preview-img');
+  const canvas = document.getElementById('msr-canvas');
+  canvas.width = img.clientWidth;
+  canvas.height = img.clientHeight;
+  drawMeasure();
+}
+
+function selectRef(el, type, inches) {
+  document.querySelectorAll('.ref-option').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('msr-custom-ref-row').style.display = type === 'custom_ref' ? 'block' : 'none';
+  if (inches !== null) {
+    refLengthInches = inches;
+    recalcMeasurement();
+  } else {
+    updateCustomRef();
+  }
+}
+
+function updateCustomRef() {
+  const val = parseFloat(document.getElementById('msr-custom-ref-val').value);
+  if (val > 0) { refLengthInches = val; recalcMeasurement(); }
+}
+
+function resetMeasure() {
+  msrState = 'ref';
+  refPoints = [];
+  fishPoints = [];
+  pixelsPerInch = null;
+  measuredFishLength = null;
+  document.getElementById('msr-result').style.display = 'none';
+  updateMeasureUI();
+  // Try to redraw; might fail if canvas isn't ready yet, that's fine
+  try { drawMeasure(); } catch(e) {}
+}
+
+function handleMeasureClick(event) {
+  const container = document.getElementById('msr-container');
+  const rect = container.getBoundingClientRect();
+  const x = (event.clientX - rect.left) / rect.width;
+  const y = (event.clientY - rect.top) / rect.height;
+
+  if (msrState === 'ref') {
+    refPoints.push({ x, y });
+    if (refPoints.length === 2) {
+      // Calibrate: compute pixels per inch
+      const canvas = document.getElementById('msr-canvas');
+      const dx = (refPoints[1].x - refPoints[0].x) * canvas.width;
+      const dy = (refPoints[1].y - refPoints[0].y) * canvas.height;
+      const refPixelDist = Math.sqrt(dx*dx + dy*dy);
+      pixelsPerInch = refPixelDist / refLengthInches;
+      msrState = 'fish';
+    }
+  } else if (msrState === 'fish') {
+    fishPoints.push({ x, y });
+    if (fishPoints.length === 2) {
+      computeFishLength();
+      msrState = 'done';
+    }
+  }
+  // If done, clicks are ignored until reset
+  updateMeasureUI();
+  drawMeasure();
+}
+
+function computeFishLength() {
+  if (!pixelsPerInch || fishPoints.length < 2) return;
+  const canvas = document.getElementById('msr-canvas');
+  const dx = (fishPoints[1].x - fishPoints[0].x) * canvas.width;
+  const dy = (fishPoints[1].y - fishPoints[0].y) * canvas.height;
+  const fishPixelDist = Math.sqrt(dx*dx + dy*dy);
+  measuredFishLength = fishPixelDist / pixelsPerInch;
+
+  document.getElementById('msr-result-inches').textContent = measuredFishLength.toFixed(2) + '"';
+  document.getElementById('msr-result-cm').textContent = (measuredFishLength * 2.54).toFixed(2) + ' cm';
+  document.getElementById('msr-result').style.display = 'block';
+}
+
+function recalcMeasurement() {
+  if (refPoints.length === 2) {
+    const canvas = document.getElementById('msr-canvas');
+    const dx = (refPoints[1].x - refPoints[0].x) * canvas.width;
+    const dy = (refPoints[1].y - refPoints[0].y) * canvas.height;
+    pixelsPerInch = Math.sqrt(dx*dx + dy*dy) / refLengthInches;
+    if (fishPoints.length === 2) computeFishLength();
+  }
+}
+
+function applyMeasurement() {
+  if (measuredFishLength) {
+    document.getElementById('cam-length').value = measuredFishLength.toFixed(2);
+    // Flash the length field
+    const el = document.getElementById('cam-length');
+    el.style.borderColor = 'var(--green)';
+    el.style.boxShadow = '0 0 0 3px rgba(48,216,120,0.25)';
+    setTimeout(() => { el.style.borderColor = ''; el.style.boxShadow = ''; }, 1500);
+  }
+}
+
+function updateMeasureUI() {
+  const instrEl = document.getElementById('msr-instruction');
+  const refBadge = document.getElementById('msr-badge-ref');
+  const fishBadge = document.getElementById('msr-badge-fish');
+
+  if (msrState === 'ref') {
+    if (refPoints.length === 0) {
+      instrEl.className = 'measure-steps measure-step-active';
+      instrEl.innerHTML = '<strong>Step 1:</strong> Click <strong>two endpoints</strong> on your reference object in the photo below. Keep the reference flat and at the same distance from the camera as the fish.';
+    } else {
+      instrEl.className = 'measure-steps measure-step-active';
+      instrEl.innerHTML = '<strong>Step 1:</strong> Click the <strong>second endpoint</strong> on your reference object.';
+    }
+    refBadge.style.opacity = '1';
+    fishBadge.style.opacity = '0.4';
+    document.getElementById('msr-ref-status').textContent = refPoints.length === 0 ? '① Set Reference' : '① 1 of 2 points';
+    document.getElementById('msr-fish-status').textContent = '② Measure Fish';
+  } else if (msrState === 'fish') {
+    if (fishPoints.length === 0) {
+      instrEl.className = 'measure-steps measure-step-active';
+      instrEl.innerHTML = '<strong>Step 2:</strong> Now click the <strong>nose</strong> (snout) of the fish, then click the <strong>tail</strong> tip for total length.';
+    } else {
+      instrEl.className = 'measure-steps measure-step-active';
+      instrEl.innerHTML = '<strong>Step 2:</strong> Click the <strong>tail tip</strong> of the fish.';
+    }
+    refBadge.style.opacity = '0.6';
+    fishBadge.style.opacity = '1';
+    document.getElementById('msr-ref-status').textContent = '✓ Reference Set';
+    document.getElementById('msr-fish-status').textContent = fishPoints.length === 0 ? '② Measure Fish' : '② 1 of 2 points';
+  } else {
+    instrEl.className = 'measure-steps measure-step-done';
+    instrEl.innerHTML = '<strong>✓ Measurement complete.</strong> Click "Apply to Length Field" to use this value, or "Reset Measure" to redo.';
+    refBadge.style.opacity = '0.6';
+    fishBadge.style.opacity = '0.6';
+    document.getElementById('msr-ref-status').textContent = '✓ Reference Set';
+    document.getElementById('msr-fish-status').textContent = '✓ Fish Measured';
+  }
+}
+
+function drawMeasure() {
+  const canvas = document.getElementById('msr-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Helper: draw point
+  function drawPoint(pt, color, label) {
+    const px = pt.x * W, py = pt.y * H;
+    ctx.beginPath();
+    ctx.arc(px, py, 7, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // White center dot
+    ctx.beginPath();
+    ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+  }
+
+  // Helper: draw line with distance label
+  function drawLine(p1, p2, color, label) {
+    const x1 = p1.x * W, y1 = p1.y * H;
+    const x2 = p2.x * W, y2 = p2.y * H;
+
+    // Dashed line
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // End caps (perpendicular ticks)
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const perp = angle + Math.PI / 2;
+    const tickLen = 10;
+    ctx.lineWidth = 2;
+    [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
+      ctx.beginPath();
+      ctx.moveTo(p.x - Math.cos(perp)*tickLen, p.y - Math.sin(perp)*tickLen);
+      ctx.lineTo(p.x + Math.cos(perp)*tickLen, p.y + Math.sin(perp)*tickLen);
+      ctx.stroke();
+    });
+
+    // Label background
+    if (label) {
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+      ctx.font = 'bold 13px "DM Sans", sans-serif';
+      const tm = ctx.measureText(label);
+      const pad = 6;
+      const lw = tm.width + pad * 2;
+      const lh = 22;
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      roundRect(ctx, mx - lw/2, my - lh/2 - 12, lw, lh, 4);
+      ctx.fill();
+      ctx.fillStyle = color;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, mx, my - 12);
+    }
+  }
+
+  // Draw reference points and line
+  refPoints.forEach((pt, i) => drawPoint(pt, '#F0B040'));
+  if (refPoints.length === 2) {
+    drawLine(refPoints[0], refPoints[1], '#F0B040', refLengthInches.toFixed(3) + '"');
+  }
+
+  // Draw fish points and line
+  fishPoints.forEach((pt, i) => drawPoint(pt, '#38A3F1'));
+  if (fishPoints.length === 2 && measuredFishLength) {
+    drawLine(fishPoints[0], fishPoints[1], '#38A3F1', measuredFishLength.toFixed(2) + '"');
+  }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+// Resize handler to keep canvas in sync
+window.addEventListener('resize', () => {
+  if (document.getElementById('cam-review').style.display !== 'none') {
+    initMeasureCanvas();
+  }
 });
 
-// ═════════════════════════════════
-//           UTILITIES
-// ═════════════════════════════════
-function tog(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
-function pf(id){return parseFloat(document.getElementById(id).value)||0}
-function fmt(n,d){if(!n||isNaN(n))return'—';const s=Number(n).toFixed(d||2);return s.replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')||'0'}
+/* ═══════════ EXCEL EXPORT UTILITIES ═══════════ */
+function applyHeaderStyle(ws, range) {
+  // SheetJS community edition doesn't support styles natively,
+  // but we set column widths for readability
+  if (!ws['!cols']) ws['!cols'] = [];
+  for (let i = 0; i < 10; i++) ws['!cols'].push({ wch: 16 });
+}
+
+function downloadXLSX(wb, filename) {
+  const out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ── Calculator Results → Excel ── */
+function exportCalcXLSX() {
+  const speciesName = document.getElementById('calc-species').value;
+  const mode = document.getElementById('calc-mode').value;
+  const unitSys = document.getElementById('calc-units').value;
+  const val = parseFloat(document.getElementById('calc-input').value) || 0;
+  const isCustom = speciesName === 'custom';
+  const sp = SPECIES.find(s => s.name === speciesName);
+  const c = isCustom ? (parseFloat(document.getElementById('calc-custom-c').value) || 0) : (sp?.c || 0);
+  const n = isCustom ? (parseFloat(document.getElementById('calc-custom-n').value) || 3) : (sp?.n || 3);
+
+  let wLb, lenIn;
+  if (mode === 'lengthToWeight') {
+    lenIn = unitSys === 'imperial' ? val : cmToIn(val);
+    wLb = calcW(c, n, lenIn);
+  } else if (mode === 'weightToLength') {
+    wLb = unitSys === 'imperial' ? val : gToLb(val);
+    lenIn = calcL(c, n, wLb);
+  } else {
+    wLb = 1 / val;
+    lenIn = calcL(c, n, wLb);
+  }
+  const wG = lbToG(wLb);
+  const lenCm = inToCm(lenIn);
+
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Results
+  const resultsData = [
+    ['Length Weight Calculator 1.0 — Calculator Results'],
+    ['Generated', new Date().toLocaleString()],
+    [],
+    ['Species', isCustom ? 'Custom' : speciesName],
+    ['Coefficient (c)', c],
+    ['Exponent (n)', n],
+    ['Formula', 'W = c × L^n'],
+    [],
+    ['Conversion Mode', mode === 'lengthToWeight' ? 'Length → Weight' : mode === 'weightToLength' ? 'Weight → Length' : 'Fish/lb → Length'],
+    ['Input Value', val],
+    ['Unit System', unitSys],
+    [],
+    ['─── Results ───'],
+    ['Weight (lb)', isFinite(wLb) ? +wLb.toFixed(6) : 'N/A'],
+    ['Weight (grams)', isFinite(wG) ? +wG.toFixed(4) : 'N/A'],
+    ['Length (inches)', isFinite(lenIn) ? +lenIn.toFixed(4) : 'N/A'],
+    ['Length (cm)', isFinite(lenCm) ? +lenCm.toFixed(4) : 'N/A'],
+    ['Fish per Pound', isFinite(1/wLb) ? +(1/wLb).toFixed(4) : 'N/A'],
+    ['Fish per Kilogram', isFinite(1/(wG/1000)) ? +(1/(wG/1000)).toFixed(4) : 'N/A'],
+    ['Condition Factor (K)', isFinite(calcK(wG,lenCm,n)) ? +calcK(wG,lenCm,n).toFixed(6) : 'N/A'],
+  ];
+  const ws1 = XLSX.utils.aoa_to_sheet(resultsData);
+  ws1['!cols'] = [{ wch: 22 }, { wch: 24 }];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Calculator Results');
+
+  // Sheet 2: Species Reference
+  const specRef = [['Species', 'Coefficient (c)', 'Exponent (n)']];
+  SPECIES.forEach(s => specRef.push([s.name, s.c, s.n]));
+  const ws2 = XLSX.utils.aoa_to_sheet(specRef);
+  ws2['!cols'] = [{ wch: 28 }, { wch: 16 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Species Reference');
+
+  downloadXLSX(wb, `LWCalc_Calculator_${(isCustom ? 'Custom' : speciesName).replace(/\s/g,'_')}.xlsx`);
+}
+
+/* ── Table → Excel ── */
+function exportTableXLSX() {
+  const name = document.getElementById('tbl-species').value;
+  const isCustom = name === 'custom';
+  const sp = SPECIES.find(s => s.name === name);
+  const c = isCustom ? parseFloat(document.getElementById('tbl-c-input').value) : sp.c;
+  const n = isCustom ? parseFloat(document.getElementById('tbl-n-input').value) : sp.n;
+  const displayName = isCustom ? 'Custom Species' : name;
+
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Length-Weight Table
+  const header = [
+    [displayName + ' — Length-Weight Table'],
+    ['Formula: W = c × L^n', '', 'c = ' + c, 'n = ' + n],
+    ['Generated: ' + new Date().toLocaleString()],
+    [],
+    ['Length (inches)', 'Length (cm)', 'Weight (lb)', 'Weight (grams)', 'Fish per Pound', 'Weight per 1000 fish (lb)', 'Fish per Kilogram'],
+  ];
+  const rows = tableRows.map(r => [
+    +r.li.toFixed(2), +r.lc.toFixed(2), +r.wl.toFixed(6),
+    +r.wg.toFixed(4), +r.fpl.toFixed(4), +r.w1k.toFixed(4), +r.fpk.toFixed(4)
+  ]);
+  const allData = header.concat(rows);
+  const ws1 = XLSX.utils.aoa_to_sheet(allData);
+  ws1['!cols'] = [
+    { wch: 15 }, { wch: 13 }, { wch: 14 }, { wch: 15 },
+    { wch: 15 }, { wch: 24 }, { wch: 17 }
+  ];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Length-Weight Table');
+
+  // Sheet 2: Parameters & Species Reference
+  const specRef = [
+    ['Parameters Used'],
+    ['Species', displayName],
+    ['Coefficient (c)', c],
+    ['Exponent (n)', n],
+    ['Start Length (in)', parseFloat(document.getElementById('tbl-start').value)],
+    ['End Length (in)', parseFloat(document.getElementById('tbl-end').value)],
+    ['Interval (in)', parseFloat(document.getElementById('tbl-interval').value)],
+    [],
+    ['All Species Reference Values'],
+    ['Species', 'Coefficient (c)', 'Exponent (n)'],
+  ];
+  SPECIES.forEach(s => specRef.push([s.name, s.c, s.n]));
+  const ws2 = XLSX.utils.aoa_to_sheet(specRef);
+  ws2['!cols'] = [{ wch: 28 }, { wch: 16 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Parameters');
+
+  downloadXLSX(wb, `LWCalc_Table_${displayName.replace(/\s/g,'_')}.xlsx`);
+}
+
+/* ── Catch Records → Excel ── */
+function exportRecordsXLSX() {
+  if (captures.length === 0) return;
+
+  const wb = XLSX.utils.book_new();
+
+  const header = [
+    ['Length Weight Calculator 1.0 — Catch Records'],
+    ['Exported: ' + new Date().toLocaleString()],
+    ['Total Records: ' + captures.length],
+    [],
+    ['#', 'Date/Time', 'Species', 'Length (in)', 'Length (cm)', 'Estimated Weight (lb)', 'Estimated Weight (g)', 'Measured Weight (lb)', 'Location', 'Notes', 'Condition Factor (K)'],
+  ];
+
+  const rows = captures.map((cap, i) => {
+    const sp = SPECIES.find(s => s.name === cap.species);
+    const c = sp?.c || 0.0004055;
+    const n = sp?.n || 3;
+    const lenCm = cap.length ? +(cap.length * 2.54).toFixed(2) : '';
+    const ewG = cap.estimatedWeight ? +(cap.estimatedWeight * 453.59237).toFixed(2) : '';
+    const K = (cap.length && cap.estimatedWeight) ? +calcK(cap.estimatedWeight * 453.59237, cap.length * 2.54, n).toFixed(4) : '';
+    return [
+      i + 1,
+      cap.timestamp,
+      cap.species,
+      cap.length || '',
+      lenCm,
+      cap.estimatedWeight ? +cap.estimatedWeight.toFixed(4) : '',
+      ewG,
+      cap.measuredWeight || '',
+      cap.location || '',
+      cap.notes || '',
+      K,
+    ];
+  });
+
+  const allData = header.concat(rows);
+  const ws = XLSX.utils.aoa_to_sheet(allData);
+  ws['!cols'] = [
+    { wch: 5 }, { wch: 20 }, { wch: 24 }, { wch: 12 }, { wch: 12 },
+    { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 22 }, { wch: 30 }, { wch: 18 }
+  ];
+  XLSX.utils.book_append_sheet(wb, ws, 'Catch Records');
+
+  // Sheet 2: Summary Statistics
+  const speciesCounts = {};
+  captures.forEach(cap => {
+    speciesCounts[cap.species] = (speciesCounts[cap.species] || 0) + 1;
+  });
+  const summary = [
+    ['Summary Statistics'],
+    [],
+    ['Total Records', captures.length],
+    ['Species Caught', Object.keys(speciesCounts).length],
+    [],
+    ['Species Breakdown'],
+    ['Species', 'Count'],
+  ];
+  Object.entries(speciesCounts).forEach(([sp, count]) => summary.push([sp, count]));
+  const ws2 = XLSX.utils.aoa_to_sheet(summary);
+  ws2['!cols'] = [{ wch: 28 }, { wch: 12 }];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
+
+  downloadXLSX(wb, `LWCalc_CatchLog_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+/* ═══════════ INIT ═══════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  populateSpeciesSelect(document.getElementById('calc-species'), true);
+  populateSpeciesSelect(document.getElementById('tbl-species'), true);
+  populateSpeciesSelect(document.getElementById('cam-species'), false);
+  calcUpdate();
+  buildTheoryGrid();
+  // Set terms effective date
+  const d = new Date();
+  document.getElementById('terms-date').textContent = d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+});
 </script>
 </body>
 </html>
